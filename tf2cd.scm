@@ -18,7 +18,11 @@
 		  'text: (tk-get-var 'userdir)
 		  'textvariable: (tk-var 'userdir)))
 
-(tk/grid label 'row: 0 'columnspan: 3)
-(tk/grid entry 'row: 1 'columnspan: 3 'sticky: 'ew 'padx: 20 'pady: 10)
+(define button (tk 'create-widget 'button
+		   'text: "button"))
+
+(tk/grid label 'row: 0 'column: 0 'columnspan: 3)
+(tk/grid entry 'row: 1 'column: 0 'columnspan: 3 'sticky: 'ew 'padx: 10 'pady: 10)
+(tk/grid button 'row: 1 'column: 4 'padx: 10)
 
 (tk-event-loop)
