@@ -1,31 +1,24 @@
 (import pstk)
 
-; parse libraryfolders.vdf ?
+; parse libraryfolders.vdf to autocomplete sourcemods dir?
+; maybe quicker to simply hardcode - check python version
 
-(tk-start) ; default calls tclsh8.6
-(ttk-map-widgets 'all) ; Use the Ttk widget set
+(tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
+(ttk-map-widgets 'all) ; use the ttk widget set
 (tk/wm 'title tk "tf2cdownloader")
 (tk 'configure 'height: 600 'width: 800)
 
-(define statusbox
-  (tk 'create-widget 'label
-      'text: "this is a label"))
+; only initialize
+(tk-set-var! 'userdir "")
 
-(tk/pack
-  (tk 'create-widget 'button
-      'text: (quote "New Install")
-      #:command (lambda () (print "clicked install")))
-  (tk 'create-widget 'button
-      'text: 'Upgrade
-      #:command (lambda () (print "clicked upgrade")))
-  (tk 'create-widget 'button
-      'text: 'Quit
-      #:command (lambda () (tk-end)))
-  (tk 'create-widget 'label
-      'text: "some text"
-      'anchor: 'center)
+(define label (tk 'create-widget 'label
+		  'text: "sourcemods dir:"))
 
-  #:expand #t
-  #:fill 'both)
+(define entry (tk 'create-widget 'entry
+		  'text: (tk-get-var 'userdir)
+		  'textvariable: (tk-var 'userdir)))
+
+(tk/grid label 'row: 0 'columnspan: 3)
+(tk/grid entry 'row: 1 'columnspan: 3 'sticky: 'ew 'padx: 20 'pady: 10)
 
 (tk-event-loop)
