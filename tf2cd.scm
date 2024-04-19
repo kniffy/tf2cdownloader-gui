@@ -23,6 +23,7 @@
 
 (tk/grid label 'row: 0 'column: 0 'columnspan: 3)
 (tk/grid entry 'row: 1 'column: 0 'columnspan: 3 'sticky: 'ew 'padx: 10 'pady: 10)
+(entry 'insert 0 "...steamapps/sourcemods")
 (tk/grid button 'row: 1 'column: 4 'padx: 10)
 
 (tk-event-loop)
