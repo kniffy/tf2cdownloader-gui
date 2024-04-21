@@ -1,4 +1,3 @@
-(import (chicken port))
 (import pstk)
 
 ; parse libraryfolders.vdf to autocomplete sourcemods dir?
@@ -24,10 +23,7 @@
 		   'text: "button"
 		   'command: (lambda ()
 			       (let ((cd (tk/choose-directory 'initialdir: "/tmp" 'mustexist: 'true)))
-				 (call-with-input-string
-				   cd
-				   (lambda (input-port)
-				     (tk-set-var! 'userdir input-port)))))))
+				 (tk-set-var! 'userdir cd)))))
 
 (define spacerx (tk 'create-widget 'frame
 		   'width: 400))
