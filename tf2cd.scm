@@ -12,12 +12,15 @@
 (tk-set-var! 'userdir "")
 
 ; widget definitions
-(define label (tk 'create-widget 'label
-		  'text: "sourcemods directory:"))
+(define spacerx (tk 'create-widget 'frame 'width: 400))
+(define spacery (tk 'create-widget 'frame 'height: 400))
+(define label0 (tk 'create-widget 'label 'text: "sourcemods directory:"))
+(define label1 (tk 'create-widget 'label 'text: "tf2c detected:"))
 
 (define entry (tk 'create-widget 'entry
 		  'text: (tk-get-var 'userdir)
-		  'textvariable: (tk-var 'userdir)))
+		  'textvariable: (tk-var 'userdir)
+		  'width: 50))
 
 (define button (tk 'create-widget 'button
 		   'text: "Browse"
@@ -25,16 +28,12 @@
 			       (let ((cd (tk/choose-directory 'initialdir: "/tmp" 'mustexist: 'true)))
 				 (tk-set-var! 'userdir cd)))))
 
-(define spacerx (tk 'create-widget 'frame
-		   'width: 400))
-(define spacery (tk 'create-widget 'frame
-		    'height: 400))
-
 ; actually drawing the window and placing positions
-(tk/grid label 'row: 0 'column: 0 'columnspan: 4 'padx: 10 'pady: 10)
-(tk/grid entry 'row: 1 'column: 0 'columnspan: 7 'sticky: 'ew 'padx: 10)
+(tk/grid label0 'row: 0 'column: 0 'pady: 10)
+(tk/grid entry 'row: 1 'column: 0 'sticky: 'ew 'padx: 10)
 (entry 'insert 0 "Steam/steamapps/sourcemods")
-(tk/grid button 'row: 1 'column: 8 'padx: 10)
-(tk/grid spacerx 'row: 2 'column: 0 'columnspan: 8 'pady: 5)	; force the width
+(tk/grid button 'row: 1 'column: 2 'padx: 10)
+(tk/grid spacerx 'row: 3 'column: 0 'columnspan: 8 'pady: 5)	; force the width
+(tk/grid label1 'row: 2 'column: 0)
 
 (tk-event-loop)
