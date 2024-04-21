@@ -8,7 +8,7 @@
 (tk/wm 'title tk "tf2cdownloader")
 (tk 'configure 'height: 600 'width: 800)
 
-; only initialize
+; for some reason we must 'initialize' tk vars like so
 (tk-set-var! 'userdir "")
 
 ; widget definitions
@@ -29,11 +29,14 @@
 				 (tk-set-var! 'userdir cd)))))
 
 ; actually drawing the window and placing positions
+; spacers first, we want at least 1 x at the lowest row
+; for readability, keep the same order as definitions
+(tk/grid spacerx 'row: 3 'column: 0 'pady: 5)	; mind the row number
 (tk/grid label0 'row: 0 'column: 0 'pady: 10)
-(tk/grid entry 'row: 1 'column: 0 'sticky: 'ew 'padx: 10)
-(entry 'insert 0 "Steam/steamapps/sourcemods")
-(tk/grid button 'row: 1 'column: 2 'padx: 10)
-(tk/grid spacerx 'row: 3 'column: 0 'columnspan: 8 'pady: 5)	; force the width
 (tk/grid label1 'row: 2 'column: 0)
+(tk/grid entry 'row: 1 'column: 0 'sticky: 'ew 'padx: 10)
+(entry 'insert 0 "Steam/steamapps/sourcemods") ; we cant put this in the initialization
+(tk/grid button 'row: 1 'column: 2 'padx: 10)
+
 
 (tk-event-loop)
