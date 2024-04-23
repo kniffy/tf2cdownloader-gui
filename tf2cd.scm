@@ -15,7 +15,6 @@
 (define label1 (tk 'create-widget 'label 'text: "tf2c detected:"))
 
 (define entry (tk 'create-widget 'entry
-		  'text: (tk-get-var 'userdir)
 		  'textvariable: (tk-var 'userdir)
 		  'width: 50))
 
@@ -41,16 +40,12 @@
 ; actually drawing the window and placing positions
 ; spacers first, we want at least 1 x at the lowest row
 ; for readability, keep the same order as definitions
-;(tk/grid spacerx 'row: 5 'column: 0 'pady: 5)	; mind the row number
 (tk/grid label0 'row: 0 'column: 0 'pady: 10)
-;(tk/grid label1 'row: 5 'column: 0 'pady: 10 'sticky: 's)		; status bar at bottom
-(tk/grid entry 'row: 1 'column: 0 'columnspan: 3 'padx: 10 'sticky: 'we)
-
-(entry 'insert 0 "Steam/steamapps/sourcemods")	; we cant put this in the initialization
-
+(tk/grid entry 'row: 1 'column: 0 'columnspan: 3 'padx: 10)
 (tk/grid button0 'row: 1 'column: 3)	; browse
 (tk/grid button1 'row: 4 'column: 0)	; install
 (tk/grid button2 'row: 4 'column: 1)	; upgrade
 (tk/grid button3 'row: 4 'column: 2)	; verify
 
+(entry 'insert 0 "Steam/steamapps/sourcemods")  ; we cant put this in the initialization
 (tk-event-loop)
