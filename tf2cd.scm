@@ -1,3 +1,4 @@
+(import (chicken process))
 (import pstk)
 
 (tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
@@ -42,8 +43,8 @@
 ; for readability, keep the same order as definitions
 (tk/grid label0 'row: 0 'column: 0 'pady: 10)
 (tk/grid entry 'row: 1 'column: 0 'columnspan: 3 'padx: 10)
-(tk/grid button0 'row: 1 'column: 3)	; browse
-(tk/grid button1 'row: 4 'column: 0)	; install
+(tk/grid button0 'row: 1 'column: 3 'padx: 10)	; browse
+(tk/grid button1 'row: 4 'column: 0 'pady: 10)	; install
 (tk/grid button2 'row: 4 'column: 1)	; upgrade
 (tk/grid button3 'row: 4 'column: 2)	; verify
 
