@@ -41,14 +41,16 @@
 ; actually drawing the window and placing positions
 ; spacers first, we want at least 1 x at the lowest row
 ; for readability, keep the same order as definitions
-(tk/grid spacerx 'row: 4 'column: 0 'pady: 5)	; mind the row number
+;(tk/grid spacerx 'row: 5 'column: 0 'pady: 5)	; mind the row number
 (tk/grid label0 'row: 0 'column: 0 'pady: 10)
-(tk/grid label1 'row: 5 'column: 0)		; status bar at bottom
-(tk/grid entry 'row: 1 'column: 0 'columnspan: 5 'sticky: 'ew 'padx: 10)
+;(tk/grid label1 'row: 5 'column: 0 'pady: 10 'sticky: 's)		; status bar at bottom
+(tk/grid entry 'row: 1 'column: 0 'columnspan: 3 'padx: 10 'sticky: 'we)
+
 (entry 'insert 0 "Steam/steamapps/sourcemods")	; we cant put this in the initialization
-(tk/grid button0 'row: 1 'column: 6 'padx: 10)
-(tk/grid button1 'row: 4 'column: 0 'padx: 10)
-(tk/grid button2 'row: 4 'column: 1 'padx: 5)
-(tk/grid button3 'row: 4 'column: 2 'padx: 5)
+
+(tk/grid button0 'row: 1 'column: 3)	; browse
+(tk/grid button1 'row: 4 'column: 0)	; install
+(tk/grid button2 'row: 4 'column: 1)	; upgrade
+(tk/grid button3 'row: 4 'column: 2)	; verify
 
 (tk-event-loop)
