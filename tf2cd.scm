@@ -1,8 +1,5 @@
 (import pstk)
 
-; parse libraryfolders.vdf to autocomplete sourcemods dir?
-; maybe quicker to simply hardcode - check python version
-
 (tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
 (ttk-map-widgets 'all) ; use the ttk widget set
 (tk/wm 'title tk "tf2cdownloader")
@@ -22,21 +19,36 @@
 		  'textvariable: (tk-var 'userdir)
 		  'width: 50))
 
-(define button (tk 'create-widget 'button
+; we can probably get a boilerplate button definition
+(define button0 (tk 'create-widget 'button
 		   'text: "Browse"
 		   'command: (lambda ()
 			       (let ((cd (tk/choose-directory 'initialdir: "/tmp" 'mustexist: 'true)))
 				 (tk-set-var! 'userdir cd)))))
+(define button1 (tk 'create-widget 'button
+		    'text: "Install"
+		    'command: (lambda ()
+				(display "clicked install"))))
+(define button2 (tk 'create-widget 'button
+		    'text: "Upgrade"
+		    'command: (lambda ()
+				(display "clicked upgrade"))))
+(define button3 (tk 'create-widget 'button
+		    'text: "Verify"
+		    'command: (lambda ()
+				(display "clicked verify"))))
 
 ; actually drawing the window and placing positions
 ; spacers first, we want at least 1 x at the lowest row
 ; for readability, keep the same order as definitions
-(tk/grid spacerx 'row: 3 'column: 0 'pady: 5)	; mind the row number
+(tk/grid spacerx 'row: 4 'column: 0 'pady: 5)	; mind the row number
 (tk/grid label0 'row: 0 'column: 0 'pady: 10)
-(tk/grid label1 'row: 2 'column: 0)
-(tk/grid entry 'row: 1 'column: 0 'sticky: 'ew 'padx: 10)
-(entry 'insert 0 "Steam/steamapps/sourcemods") ; we cant put this in the initialization
-(tk/grid button 'row: 1 'column: 2 'padx: 10)
-
+(tk/grid label1 'row: 5 'column: 0)		; status bar at bottom
+(tk/grid entry 'row: 1 'column: 0 'columnspan: 5 'sticky: 'ew 'padx: 10)
+(entry 'insert 0 "Steam/steamapps/sourcemods")	; we cant put this in the initialization
+(tk/grid button0 'row: 1 'column: 6 'padx: 10)
+(tk/grid button1 'row: 4 'column: 0 'padx: 10)
+(tk/grid button2 'row: 4 'column: 1 'padx: 5)
+(tk/grid button3 'row: 4 'column: 2 'padx: 5)
 
 (tk-event-loop)
