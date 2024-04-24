@@ -1,5 +1,16 @@
-(import (chicken process))
+(import (chicken process)
+	(chicken platform)
+	(chicken string))
 (import pstk)
+
+; set some platform-specific stuff
+(cond-expand
+  (windows
+    (define tempdir "C:\\TEMP")
+    (define downloader "bin\\aria2c.exe ")))
+  (linux
+    (define tempdir "/var/tmp")
+    (define downloader "bin/aria2c ")))
 
 (tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
 (ttk-map-widgets 'all) ; use the ttk widget set
