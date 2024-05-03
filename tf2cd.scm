@@ -74,7 +74,7 @@
 		    'command: (lambda ()
 				(let ((porg "100"))
 				  (button1 'state "disabled")
-				  (process (conc downloader arialine))
+				  (system (conc downloader arialine))
 				  (tk-set-var! 'progbar porg)))))
 (define button2 (tk 'create-widget 'button
 		    'text: "Upgrade"
