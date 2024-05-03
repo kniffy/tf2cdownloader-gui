@@ -1,38 +1,48 @@
-(import (chicken process)
+(import (chicken io)
+	(chicken process)
 	(chicken platform)
-	(chicken string))
-(import pstk)
+	(chicken string)
+	(srfi-34))
+(import pstk
+	json-rpc)
 
 ; set some platform-specific stuff
 (cond-expand
   (windows
-    (define tempdir "C:\\TEMP")
+    (define tempdir "C:\\TEMP ")
     (define downloader "bin\\aria2c.exe ")
     (define butler "bin\\butler.exe "))
   (linux
-    (define tempdir "/var/tmp")
+    (define tempdir "/var/tmp ")
     (define downloader "bin/aria2c ")
     (define butler "bin/butler ")))
 
 ; maybe get rid of a lot of these
+;(define arialine
+;  (conc
+;    "-x 16 "
+;    "-UTF2CDownloadergui2024-04-24 "
+;    "--allow-piece-length-change=true "
+;    "-j 16 "
+;    "--optimize-concurrent-downloads=true "
+;    "--check-certificate=false "
+;    "-V "
+;    "--auto-file-renaming=false "
+;    "-c "
+;    "--allow-overwrite=true "
+;    "--console-log-level=error "
+;    "--summary-interval=0 "
+;    "--bt-hash-check-seed=false "
+;    "--seed-time=0 "
+;    "-d "
+;    tempdir))
 (define arialine
   (conc
-    "-x 16 "
-    "-UTF2CDownloadergui2024-04-24 "
-    "--allow-piece-length-change=true "
-    "-j 16 "
-    "--optimize-concurrent-downloads=true "
-    "--check-certificate=false "
-    "-V "
-    "--auto-file-renaming=false "
-    "-c "
-    "--allow-overwrite=true "
-    "--console-log-level=error "
-    "--summary-interval=0 "
-    "--bt-hash-check-seed=false "
-    "--seed-time=0 "
+    "-l aria.log "
+    "--log-level=info "
     "-d "
-    tempdir))
+    tempdir
+    "http://check.ovh.com/files/1Mio.dat"))
 
 (tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
 (ttk-map-widgets 'all) ; use the ttk widget set
@@ -40,8 +50,8 @@
 (tk 'configure 'height: 600 'width: 800)
 
 ; for some reason we must 'initialize' tk vars like so
-(tk-set-var! 'userdir "")
-(tk-set-var! 'progbar "")
+(tk-var 'userdir)
+(tk-var 'progbar)
 
 ; widget definitions
 (define spacerx (tk 'create-widget 'frame 'width: 400))
@@ -62,7 +72,10 @@
 (define button1 (tk 'create-widget 'button
 		    'text: "Install"
 		    'command: (lambda ()
-				(display "clicked install"))))
+				(let ((porg "100"))
+				  (button1 'state "disabled")
+				  (process (conc downloader arialine))
+				  (tk-set-var! 'progbar porg)))))
 (define button2 (tk 'create-widget 'button
 		    'text: "Upgrade"
 		    'command: (lambda ()
