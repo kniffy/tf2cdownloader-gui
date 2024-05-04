@@ -53,11 +53,8 @@
 
 ; for some reason we must 'initialize' tk vars like so
 (tk-var 'userdir)
-;(tk-var 'progbar)
 
 ; widget definitions
-;(define spacerx (tk 'create-widget 'frame 'width: 400))
-;(define spacery (tk 'create-widget 'frame 'height: 400))
 (define label0 (tk 'create-widget 'label 'text: "sourcemods directory:"))
 (define label1 (tk 'create-widget 'label 'text: "tf2c detected:"))
 
@@ -78,7 +75,6 @@
 				  (button1 'state "disabled")
 				  (system (conc downloader arialine))
 				  (statusbox 'insert 'end "uhh")))))
-;				  (tk-set-var! 'progbar porg)))))
 (define button2 (tk 'create-widget 'button
 		    'text: "Upgrade"
 		    'command: (lambda ()
@@ -87,9 +83,6 @@
 		    'text: "Verify"
 		    'command: (lambda ()
 				(display "clicked verify"))))
-;(define progress (tk 'create-widget 'progressbar
-;		     'length: 400
-;		     'variable: (tk-var 'progbar)))
 (define statusbox (tk 'create-widget 'text
 		   'height: 5
 		   'undo: 'false
@@ -103,7 +96,6 @@
 (tk/grid button1 'row: 4 'column: 0 'pady: 10)	; install
 (tk/grid button2 'row: 4 'column: 1)	; upgrade
 (tk/grid button3 'row: 4 'column: 2)	; verify
-;(tk/grid progress 'row: 5 'column: 0 'columnspan: 3)
 (tk/grid statusbox 'row: 6 'column: 0 'columnspan: 4)
 
 (entry 'insert 0 "Steam/steamapps/sourcemods")  ; we cant put this in the initialization
