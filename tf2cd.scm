@@ -53,11 +53,11 @@
 
 ; for some reason we must 'initialize' tk vars like so
 (tk-var 'userdir)
-(tk-var 'progbar)
+;(tk-var 'progbar)
 
 ; widget definitions
-(define spacerx (tk 'create-widget 'frame 'width: 400))
-(define spacery (tk 'create-widget 'frame 'height: 400))
+;(define spacerx (tk 'create-widget 'frame 'width: 400))
+;(define spacery (tk 'create-widget 'frame 'height: 400))
 (define label0 (tk 'create-widget 'label 'text: "sourcemods directory:"))
 (define label1 (tk 'create-widget 'label 'text: "tf2c detected:"))
 
@@ -87,17 +87,15 @@
 		    'text: "Verify"
 		    'command: (lambda ()
 				(display "clicked verify"))))
-(define progress (tk 'create-widget 'progressbar
-		     'length: 400
-		     'variable: (tk-var 'progbar)))
+;(define progress (tk 'create-widget 'progressbar
+;		     'length: 400
+;		     'variable: (tk-var 'progbar)))
 (define statusbox (tk 'create-widget 'text
-		   'height: 3
+		   'height: 5
 		   'undo: 'false
 		   'relief: 'sunken))
-		   ;'state: 'disabled))
 
 ; actually drawing the window and placing positions
-; spacers first, we want at least 1 x at the lowest row
 ; for readability, keep the same order as definitions
 (tk/grid label0 'row: 0 'column: 0 'pady: 10)
 (tk/grid entry 'row: 1 'column: 0 'columnspan: 3 'padx: 10)
