@@ -3,8 +3,10 @@
 	(chicken platform)
 	(chicken string)
 	(srfi-34))
+
 (import pstk
-	json-rpc)
+	simple-loops)
+
 
 ; set some platform-specific stuff
 (cond-expand
@@ -75,7 +77,8 @@
 				(let ((porg "100"))
 				  (button1 'state "disabled")
 				  (system (conc downloader arialine))
-				  (tk-set-var! 'progbar porg)))))
+				  (statusbox 'insert 'end "uhh")))))
+;				  (tk-set-var! 'progbar porg)))))
 (define button2 (tk 'create-widget 'button
 		    'text: "Upgrade"
 		    'command: (lambda ()
@@ -87,6 +90,11 @@
 (define progress (tk 'create-widget 'progressbar
 		     'length: 400
 		     'variable: (tk-var 'progbar)))
+(define statusbox (tk 'create-widget 'text
+		   'height: 3
+		   'undo: 'false
+		   'relief: 'sunken))
+		   ;'state: 'disabled))
 
 ; actually drawing the window and placing positions
 ; spacers first, we want at least 1 x at the lowest row
@@ -97,7 +105,10 @@
 (tk/grid button1 'row: 4 'column: 0 'pady: 10)	; install
 (tk/grid button2 'row: 4 'column: 1)	; upgrade
 (tk/grid button3 'row: 4 'column: 2)	; verify
-(tk/grid progress 'row: 5 'column: 0 'columnspan: 3)
+;(tk/grid progress 'row: 5 'column: 0 'columnspan: 3)
+(tk/grid statusbox 'row: 6 'column: 0 'columnspan: 4)
 
 (entry 'insert 0 "Steam/steamapps/sourcemods")  ; we cant put this in the initialization
+(statusbox 'insert 'end "uhh")
+
 (tk-event-loop)
