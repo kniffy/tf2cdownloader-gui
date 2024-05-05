@@ -1,4 +1,5 @@
 (import (chicken io)
+	(chicken port)
 	(chicken process)
 	(chicken platform)
 	(chicken string)
@@ -39,15 +40,15 @@
     "-l aria.log "
     "-d "
     tempdir
-    "http://fastdl.tildas.org/pub/1Mio.dat"))
+    "http://fastdl.tildas.org/pub/10Mio.dat"))
 
-; we need some procedures
 (define installproc
   (delay
-    (let ((proc (process (conc downloader arialine))))
-      (let ((output (read-list proc)))
-	(begin
-	  (statusbox 'insert 'end output))))))
+    (let ((proc (system (conc downloader arialine))))
+      (if (zero? proc)
+	(statusbox 'insert 'end "download finished?")
+	(display "error??")))))
+
 (define disablebuttons
   (lambda ()
     (button1 'state 'disabled)
@@ -56,14 +57,10 @@
     (button0 'state 'disabled)))
 (define enablebuttons
   (lambda ()
-      (button1 'configure
-	       'state: 'normal)
-      (button2 'configure
-	       'state: 'normal)
-      (button3 'configure
-	       'state: 'normal)
-      (button0 'configure
-	       'state: 'normal)))
+      (button1 'configure 'state: 'normal)
+      (button2 'configure 'state: 'normal)
+      (button3 'configure 'state: 'normal)
+      (button0 'configure 'state: 'normal)))
 (define clearstatus
   (lambda ()
     (statusbox 'delete '1.0 'end)))
@@ -107,6 +104,7 @@
 				  (disablebuttons)
 				  (clearstatus)
 				  (statusbox 'insert 'end "Clicked Upgrade.. \n\n")
+				  (sleep 5)
 				  (enablebuttons)))))
 (define button3 (tk 'create-widget 'button
 		    'text: "Verify"
