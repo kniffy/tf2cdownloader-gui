@@ -110,9 +110,10 @@
 		    'command: (lambda ()
 				(begin
 				  (disablebuttons)
+				  (enablestatus)
 				  (clearstatus)
-				  (statusbox 'insert 'end "Clicked Upgrade.. \n\n")
-				  (sleep 5)
+				  (statusbox 'insert 'end "Clicked Upgrade.. \n")
+				  (sleep 5) ;(force upgradeproc)
 				  (enablebuttons)))))
 (define button3 (tk 'create-widget 'button
 		    'text: "Verify"
