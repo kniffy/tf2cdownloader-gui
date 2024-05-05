@@ -41,14 +41,36 @@
     tempdir
     "http://fastdl.tildas.org/pub/1Mio.dat"))
 
+; we need some procedures
 (define installproc
   (delay
-  (let ((proc (process (conc downloader arialine))))
-    (let ((output (read-list proc)))
-      (begin
-	(button1 'state "disabled")
-	(statusbox 'insert 'end output))))))
+    (let ((proc (process (conc downloader arialine))))
+      (let ((output (read-list proc)))
+	(begin
+	  (statusbox 'insert 'end output))))))
+(define disablebuttons
+  (delay
+    (begin
+      (button1 'state 'disabled)
+      (button2 'state 'disabled)
+      (button3 'state 'disabled)
+      (button0 'state 'disabled))))
+(define enablebuttons
+  (delay
+    (begin
+      (button1 'configure
+	       'state: 'normal)
+      (button2 'configure
+	       'state: 'normal)
+      (button3 'configure
+	       'state: 'normal)
+      (button0 'configure
+	       'state: 'normal))))
+(define clearstatus
+  (delay
+    (statusbox 'delete '1.0 'end)))
 
+; init
 (tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
 (ttk-map-widgets 'all) ; use the ttk widget set
 (tk/wm 'title tk "tf2cdownloader")
@@ -63,7 +85,7 @@
 
 (define entry (tk 'create-widget 'entry
 		  'textvariable: (tk-var 'userdir)
-		  'width: 50))
+		  'width: 55))
 
 ; we can probably get a boilerplate button definition
 (define button0 (tk 'create-widget 'button
@@ -74,11 +96,20 @@
 (define button1 (tk 'create-widget 'button
 		    'text: "Install"
 		    'command: (lambda ()
-				(force installproc))))
+				(begin
+				  (force disablebuttons)
+				  (force clearstatus)
+				  (statusbox 'insert 'end "Download starting... \n\n")
+				  (force installproc)
+				  (force enablebuttons)))))
 (define button2 (tk 'create-widget 'button
 		    'text: "Upgrade"
 		    'command: (lambda ()
-				(display "clicked upgrade"))))
+				(begin
+				  (force disablebuttons)
+				  (force clearstatus)
+				  (statusbox 'insert 'end "Clicked Upgrade.. \n\n")
+				  (force enablebuttons)))))
 (define button3 (tk 'create-widget 'button
 		    'text: "Verify"
 		    'command: (lambda ()
@@ -87,7 +118,7 @@
 		      'height: 5
 		      'undo: 'false
 		      'relief: 'sunken
-		      'wrap: 'word)) 
+		      'wrap: 'word))
 
 ; actually drawing the window and placing positions
 ; for readability, keep the same order as definitions
