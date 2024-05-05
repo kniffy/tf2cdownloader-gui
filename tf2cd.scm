@@ -49,15 +49,13 @@
 	(begin
 	  (statusbox 'insert 'end output))))))
 (define disablebuttons
-  (delay
-    (begin
-      (button1 'state 'disabled)
-      (button2 'state 'disabled)
-      (button3 'state 'disabled)
-      (button0 'state 'disabled))))
+  (lambda ()
+    (button1 'state 'disabled)
+    (button2 'state 'disabled)
+    (button3 'state 'disabled)
+    (button0 'state 'disabled)))
 (define enablebuttons
-  (delay
-    (begin
+  (lambda ()
       (button1 'configure
 	       'state: 'normal)
       (button2 'configure
@@ -65,9 +63,9 @@
       (button3 'configure
 	       'state: 'normal)
       (button0 'configure
-	       'state: 'normal))))
+	       'state: 'normal)))
 (define clearstatus
-  (delay
+  (lambda ()
     (statusbox 'delete '1.0 'end)))
 
 ; init
@@ -97,19 +95,19 @@
 		    'text: "Install"
 		    'command: (lambda ()
 				(begin
-				  (force disablebuttons)
-				  (force clearstatus)
+				  (disablebuttons)
+				  (clearstatus)
 				  (statusbox 'insert 'end "Download starting... \n\n")
 				  (force installproc)
-				  (force enablebuttons)))))
+				  (enablebuttons)))))
 (define button2 (tk 'create-widget 'button
 		    'text: "Upgrade"
 		    'command: (lambda ()
 				(begin
-				  (force disablebuttons)
-				  (force clearstatus)
+				  (disablebuttons)
+				  (clearstatus)
 				  (statusbox 'insert 'end "Clicked Upgrade.. \n\n")
-				  (force enablebuttons)))))
+				  (enablebuttons)))))
 (define button3 (tk 'create-widget 'button
 		    'text: "Verify"
 		    'command: (lambda ()
