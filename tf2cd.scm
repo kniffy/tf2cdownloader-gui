@@ -61,6 +61,12 @@
       (button2 'configure 'state: 'normal)
       (button3 'configure 'state: 'normal)
       (button0 'configure 'state: 'normal)))
+(define disablestatus
+  (lambda ()
+    (statusbox 'configure 'state: 'disabled)))
+(define enablestatus
+  (lambda ()
+    (statusbox 'configure 'state: 'normal)))
 (define clearstatus
   (lambda ()
     (statusbox 'delete '1.0 'end)))
@@ -89,13 +95,15 @@
 			       (let ((cd (tk/choose-directory 'initialdir: "/tmp" 'mustexist: 'true)))
 				 (tk-set-var! 'userdir cd)))))
 (define button1 (tk 'create-widget 'button
-		    'text: "Install"
+		    'text: "New Install"
 		    'command: (lambda ()
 				(begin
 				  (disablebuttons)
+				  (enablestatus)
 				  (clearstatus)
-				  (statusbox 'insert 'end "Download starting... \n\n")
+				  (statusbox 'insert 'end "Download starting... \n")
 				  (force installproc)
+				  (disablestatus)
 				  (enablebuttons)))))
 (define button2 (tk 'create-widget 'button
 		    'text: "Upgrade"
@@ -114,7 +122,8 @@
 		      'height: 5
 		      'undo: 'false
 		      'relief: 'sunken
-		      'wrap: 'word))
+		      'wrap: 'word
+		      'state: 'disabled))
 
 ; actually drawing the window and placing positions
 ; for readability, keep the same order as definitions
