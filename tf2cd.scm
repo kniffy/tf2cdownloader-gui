@@ -7,7 +7,6 @@
 (import pstk
 	simple-loops)
 
-
 ; set some platform-specific stuff
 (cond-expand
   (windows
@@ -20,31 +19,35 @@
     (define butler "bin/butler ")))
 
 ; maybe get rid of a lot of these
-;(define arialine
-;  (conc
-;    "-x 16 "
-;    "-UTF2CDownloadergui2024-04-24 "
-;    "--allow-piece-length-change=true "
-;    "-j 16 "
-;    "--optimize-concurrent-downloads=true "
-;    "--check-certificate=false "
-;    "-V "
-;    "--auto-file-renaming=false "
-;    "-c "
-;    "--allow-overwrite=true "
-;    "--console-log-level=error "
-;    "--summary-interval=0 "
-;    "--bt-hash-check-seed=false "
-;    "--seed-time=0 "
-;    "-d "
-;    tempdir))
 (define arialine
   (conc
+    "--show-console-readout=false "
+    "-x 16 "
+    "-UTF2CDownloadergui2024-04-24 "
+    "--allow-piece-length-change=true "
+    "-j 16 "
+    "--optimize-concurrent-downloads=true "
+    "--check-certificate=false "
+    "-V "
+    "--auto-file-renaming=false "
+    "-c "
+    "--allow-overwrite=true "
+    "--console-log-level=error "
+    "--summary-interval=0 "
+    "--bt-hash-check-seed=false "
+    "--seed-time=0 "
     "-l aria.log "
-    "--log-level=info "
     "-d "
     tempdir
-    "http://check.ovh.com/files/1Mio.dat"))
+    "http://fastdl.tildas.org/pub/1Mio.dat"))
+
+(define installproc
+  (delay
+  (let ((proc (process (conc downloader arialine))))
+    (let ((output (read-list proc)))
+      (begin
+	(button1 'state "disabled")
+	(statusbox 'insert 'end output))))))
 
 (tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
 (ttk-map-widgets 'all) ; use the ttk widget set
@@ -71,10 +74,7 @@
 (define button1 (tk 'create-widget 'button
 		    'text: "Install"
 		    'command: (lambda ()
-				(let ((porg "100"))
-				  (button1 'state "disabled")
-				  (system (conc downloader arialine))
-				  (statusbox 'insert 'end "uhh")))))
+				(force installproc))))
 (define button2 (tk 'create-widget 'button
 		    'text: "Upgrade"
 		    'command: (lambda ()
@@ -84,9 +84,10 @@
 		    'command: (lambda ()
 				(display "clicked verify"))))
 (define statusbox (tk 'create-widget 'text
-		   'height: 5
-		   'undo: 'false
-		   'relief: 'sunken))
+		      'height: 5
+		      'undo: 'false
+		      'relief: 'sunken
+		      'wrap: 'word)) 
 
 ; actually drawing the window and placing positions
 ; for readability, keep the same order as definitions
@@ -99,6 +100,5 @@
 (tk/grid statusbox 'row: 6 'column: 0 'columnspan: 4)
 
 (entry 'insert 0 "Steam/steamapps/sourcemods")  ; we cant put this in the initialization
-(statusbox 'insert 'end "uhh")
 
 (tk-event-loop)
