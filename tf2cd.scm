@@ -67,14 +67,18 @@
 (define button1 (tk 'create-widget 'button
 		    'text: "New Install"
 		    'command: (lambda ()
-				(begin
-				  (disablebuttons)
-				  (enablestatus)
-				  (clearstatus)
-				  (statusbox 'insert 'end "Download starting... \n")
-				  (force installproc)
-				  (disablestatus)
-				  (enablebuttons)))))
+				  (begin
+				    (disablebuttons)
+				    (enablestatus)
+				    (clearstatus)
+				    (statusbox 'insert 'end "Download starting... \n")
+				    (let ((proc (system (conc downloader arialine))))
+				      (if (zero? proc)
+					(statusbox 'insert 'end "finished?")
+					(statusbox 'insert 'end "error!"))
+				      (disablestatus)
+				      (enablebuttons))))))
+
 (define button2 (tk 'create-widget 'button
 		    'text: "Upgrade"
 		    'command: (lambda ()
@@ -109,12 +113,12 @@
 
 (entry 'insert 0 "Steam/steamapps/sourcemods")  ; we cant put this in the initialization
 
-(define installproc
-  (delay
-    (let ((proc (system (conc downloader arialine))))
-      (if (zero? proc)
-	(statusbox 'insert 'end "download finished?")
-	(display "error??")))))
+;(define installproc
+;  (delay
+;    (let ((proc (system (conc downloader arialine))))
+;      (if (zero? proc)
+;	(statusbox 'insert 'end "download finished?")
+;	(display "error??"))))
 
 (define disablebuttons
   (lambda ()
