@@ -5,8 +5,7 @@
 	(chicken string)
 	(srfi-34))
 
-(import pstk
-	simple-loops)
+(import pstk)
 
 ; set some platform-specific stuff
 (cond-expand
@@ -41,35 +40,6 @@
     "-d "
     tempdir
     "http://fastdl.tildas.org/pub/10Mio.dat"))
-
-(define installproc
-  (delay
-    (let ((proc (system (conc downloader arialine))))
-      (if (zero? proc)
-	(statusbox 'insert 'end "download finished?")
-	(display "error??")))))
-
-(define disablebuttons
-  (lambda ()
-    (button1 'state 'disabled)
-    (button2 'state 'disabled)
-    (button3 'state 'disabled)
-    (button0 'state 'disabled)))
-(define enablebuttons
-  (lambda ()
-      (button1 'configure 'state: 'normal)
-      (button2 'configure 'state: 'normal)
-      (button3 'configure 'state: 'normal)
-      (button0 'configure 'state: 'normal)))
-(define disablestatus
-  (lambda ()
-    (statusbox 'configure 'state: 'disabled)))
-(define enablestatus
-  (lambda ()
-    (statusbox 'configure 'state: 'normal)))
-(define clearstatus
-  (lambda ()
-    (statusbox 'delete '1.0 'end)))
 
 ; init
 (tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
@@ -114,6 +84,7 @@
 				  (clearstatus)
 				  (statusbox 'insert 'end "Clicked Upgrade.. \n")
 				  (sleep 5) ;(force upgradeproc)
+				  (disablestatus)
 				  (enablebuttons)))))
 (define button3 (tk 'create-widget 'button
 		    'text: "Verify"
@@ -137,5 +108,34 @@
 (tk/grid statusbox 'row: 6 'column: 0 'columnspan: 4)
 
 (entry 'insert 0 "Steam/steamapps/sourcemods")  ; we cant put this in the initialization
+
+(define installproc
+  (delay
+    (let ((proc (system (conc downloader arialine))))
+      (if (zero? proc)
+	(statusbox 'insert 'end "download finished?")
+	(display "error??")))))
+
+(define disablebuttons
+  (lambda ()
+    (button1 'state 'disabled)
+    (button2 'state 'disabled)
+    (button3 'state 'disabled)
+    (button0 'state 'disabled)))
+(define enablebuttons
+  (lambda ()
+      (button1 'configure 'state: 'normal)
+      (button2 'configure 'state: 'normal)
+      (button3 'configure 'state: 'normal)
+      (button0 'configure 'state: 'normal)))
+(define disablestatus
+  (lambda ()
+    (statusbox 'configure 'state: 'disabled)))
+(define enablestatus
+  (lambda ()
+    (statusbox 'configure 'state: 'normal)))
+(define clearstatus
+  (lambda ()
+    (statusbox 'delete '1.0 'end)))
 
 (tk-event-loop)
