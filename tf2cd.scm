@@ -75,12 +75,10 @@
 				    (enablestatus)
 				    (clearstatus)
 				    (statusbox 'insert 'end "Download starting... \n")
-				    (let ((proc (system (conc downloader arialine))))
-				      (if (zero? proc)
-					(statusbox 'insert 'end "finished?")
-					(statusbox 'insert 'end "error!"))
-				      (disablestatus)
-				      (enablebuttons))))))
+				    (installproc)
+				    (statusbox 'insert 'end "finished?")
+				    (disablestatus)
+				    (enablebuttons)))))
 
 (define button2 (tk 'create-widget 'button
 		    'text: "Upgrade"
@@ -116,12 +114,14 @@
 
 (entry 'insert 0 "Steam/steamapps/sourcemods")  ; we cant put this in the initialization
 
-;(define installproc
-;  (delay
-;    (let ((proc (system (conc downloader arialine))))
-;      (if (zero? proc)
-;	(statusbox 'insert 'end "download finished?")
-;	(display "error??"))))
+(define installproc
+  (lambda ()
+    (let-values (((a b c)
+		  (process (conc downloader arialine))))
+      (begin
+	(statusbox 'insert 'end (read-lines a))
+	(close-input-port a)
+	(close-output-port b)))))
 
 (define disablebuttons
   (lambda ()
