@@ -1,4 +1,6 @@
-(import (chicken io)
+(import (r7rs)
+	(chicken file)
+	(chicken io)
 	(chicken port)
 	(chicken process)
 	(chicken platform)
@@ -21,6 +23,7 @@
 ; maybe get rid of a lot of these
 (define arialine
   (conc
+    " "
     "--show-console-readout=false "
     "-x 16 "
     "-UTF2CDownloadergui2024-04-24 "
