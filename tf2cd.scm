@@ -3,30 +3,35 @@
 	(chicken io)
 	(chicken port)
 	(chicken process)
+	(chicken process-context)
 	(chicken platform)
-	(chicken string)
-	(srfi-34))
+	(chicken string))
 
-(import pstk)
+(import (pstk))
 
 ; set some platform-specific stuff
 (cond-expand
   (windows
     (define tempdir "C:\\TEMP ")
     (define downloader "bin\\aria2c.exe ")
-    (define butler "bin\\butler.exe "))
+    (define butler "bin\\butler.exe ")
+    (define defaultdir "c:\\program files (x86)\\steam\\steamapps\\sourcemods"))
   (linux
     (define tempdir "/var/tmp ")
     (define downloader "bin/aria2c ")
-    (define butler "bin/butler ")))
+    (define butler "bin/butler ")
+    (define defaultdir
+      (let ((user (get-environment-variable "USER")))
+	(conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))))
 
 ; maybe get rid of a lot of these
 (define arialine
   (conc
     " "
-    "--show-console-readout=false "
+;    "--show-console-readout=false "
+    "--enable-color=false "
     "-x 16 "
-    "-UTF2CDownloadergui2024-04-24 "
+    "-UTF2CDownloadergui2024-05-10 "
     "--allow-piece-length-change=true "
     "-j 16 "
     "--optimize-concurrent-downloads=true "
@@ -36,13 +41,13 @@
     "-c "
     "--allow-overwrite=true "
     "--console-log-level=error "
-    "--summary-interval=0 "
+    "--summary-interval=5 "
     "--bt-hash-check-seed=false "
     "--seed-time=0 "
     "-l aria.log "
     "-d "
     tempdir
-    "http://fastdl.tildas.org/pub/10Mio.dat"))
+    "http://fastdl.tildas.org/pub/100Mio.dat"))
 
 ; init
 (tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
@@ -96,7 +101,7 @@
 		    'command: (lambda ()
 				(display "clicked verify"))))
 (define statusbox (tk 'create-widget 'text
-		      'height: 5
+		      'height: 10
 		      'undo: 'false
 		      'relief: 'sunken
 		      'wrap: 'word
@@ -112,16 +117,26 @@
 (tk/grid button3 'row: 4 'column: 2)	; verify
 (tk/grid statusbox 'row: 6 'column: 0 'columnspan: 4)
 
-(entry 'insert 0 "Steam/steamapps/sourcemods")  ; we cant put this in the initialization
+(entry 'insert 0 defaultdir)  ; we cant put this in the initialization
 
 (define installproc
   (lambda ()
-    (let-values (((a b c)
-		  (process (conc downloader arialine))))
+    (let-values (((a b c) (process (conc downloader arialine))))
       (begin
-	(statusbox 'insert 'end (read-lines a))
-	(close-input-port a)
-	(close-output-port b)))))
+      (with-input-from-port a
+			    (lambda ()
+			      (port-for-each (lambda (word)
+					       (statusbox 'insert 'end word)
+					       (statusbox 'insert 'end "\n")
+					       (statusbox 'see 'end))
+					     read-line)))
+      (close-input-port a)
+      (close-output-port b)))))
+
+;(define untar
+  ; todo call tar as subprocess
+  ; also figure out doing it on windows
+;)
 
 (define disablebuttons
   (lambda ()
