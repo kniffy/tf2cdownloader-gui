@@ -70,36 +70,23 @@
 (define button0 (tk 'create-widget 'button
 		   'text: "Browse"
 		   'command: (lambda ()
-			       (let ((cd (tk/choose-directory 'initialdir: "/tmp" 'mustexist: 'true)))
+			       (let ((cd (tk/choose-directory 'initialdir: defaultdir 'mustexist: 'true)))
 				 (tk-set-var! 'userdir cd)))))
 (define button1 (tk 'create-widget 'button
 		    'text: "New Install"
 		    'command: (lambda ()
-				  (begin
-				    (disablebuttons)
-				    (enablestatus)
-				    (clearstatus)
-				    (statusbox 'insert 'end "Download starting... \n")
-				    (installproc)
-				    (statusbox 'insert 'end "finished?")
-				    (disablestatus)
-				    (enablebuttons)))))
+				(installproc))))
 
 (define button2 (tk 'create-widget 'button
 		    'text: "Upgrade"
 		    'command: (lambda ()
-				(begin
-				  (disablebuttons)
-				  (enablestatus)
-				  (clearstatus)
-				  (statusbox 'insert 'end "Clicked Upgrade.. \n")
-				  (sleep 5) ;(force upgradeproc)
-				  (disablestatus)
-				  (enablebuttons)))))
+				(upgradeproc))))
+
 (define button3 (tk 'create-widget 'button
 		    'text: "Verify"
 		    'command: (lambda ()
-				(display "clicked verify"))))
+				(verifyproc))))
+
 (define statusbox (tk 'create-widget 'text
 		      'height: 10
 		      'undo: 'false
@@ -111,53 +98,72 @@
 ; for readability, keep the same order as definitions
 (tk/grid label0 'row: 0 'column: 0 'pady: 10)
 (tk/grid entry 'row: 1 'column: 0 'columnspan: 3 'padx: 10)
-(tk/grid button0 'row: 1 'column: 3 'padx: 10)	; browse
-(tk/grid button1 'row: 4 'column: 0 'pady: 10)	; install
-(tk/grid button2 'row: 4 'column: 1)	; upgrade
-(tk/grid button3 'row: 4 'column: 2)	; verify
+(tk/grid button0 'row: 1 'column: 3 'padx: 10)		; browse
+(tk/grid button1 'row: 4 'column: 0 'pady: 10)		; install
+(tk/grid button2 'row: 4 'column: 1)			; upgrade
+(tk/grid button3 'row: 4 'column: 2)			; verify
 (tk/grid statusbox 'row: 6 'column: 0 'columnspan: 4)
 
 (entry 'insert 0 defaultdir)  ; we cant put this in the initialization
 
+; our button click procedures etc below
 (define installproc
   (lambda ()
     (let-values (((a b c) (process (conc downloader arialine))))
       (begin
-      (with-input-from-port a
-			    (lambda ()
-			      (port-for-each (lambda (word)
-					       (statusbox 'insert 'end word)
-					       (statusbox 'insert 'end "\n")
-					       (statusbox 'see 'end))
-					     read-line)))
-      (close-input-port a)
-      (close-output-port b)))))
+	(buttonstate 0)
+	(statusstate 1)
+	(statusstate 2)
+	(statusbox 'insert 'end "Download starting.. \n")
+
+	(with-input-from-port a (lambda ()
+				  (port-for-each (lambda (word)
+						   (statusbox 'insert 'end word)
+						   (statusbox 'insert 'end "\n")
+						   (statusbox 'see 'end))
+						 read-line)))
+; this is an empty line ======================================================
+	(close-input-port a)
+	(close-output-port b)
+	(statusstate 0)
+	(buttonstate 1)))))
+
+(define upgradeproc
+  (lambda ()
+    (display "clicked upgrade")))
+
+(define verifyproc
+  (lambda ()
+    (display "clicked verify")))
 
 ;(define untar
   ; todo call tar as subprocess
   ; also figure out doing it on windows
 ;)
 
-(define disablebuttons
-  (lambda ()
-    (button1 'state 'disabled)
-    (button2 'state 'disabled)
-    (button3 'state 'disabled)
-    (button0 'state 'disabled)))
-(define enablebuttons
-  (lambda ()
-      (button1 'configure 'state: 'normal)
-      (button2 'configure 'state: 'normal)
-      (button3 'configure 'state: 'normal)
-      (button0 'configure 'state: 'normal)))
-(define disablestatus
-  (lambda ()
-    (statusbox 'configure 'state: 'disabled)))
-(define enablestatus
-  (lambda ()
-    (statusbox 'configure 'state: 'normal)))
-(define clearstatus
-  (lambda ()
-    (statusbox 'delete '1.0 'end)))
+(define buttonstate
+  (let ((dis "state disabled"))
+    (lambda (z)
+      (if (zero? z)
+	(begin
+	  (button0 dis)
+	  (button1 dis)
+	  (button2 dis)
+	  (button3 dis))
+	(begin
+	  (button0 'configure 'state: 'normal)
+	  (button1 'configure 'state: 'normal)
+	  (button2 'configure 'state: 'normal)
+	  (button3 'configure 'state: 'normal))))))
+
+; 0 - disable text box
+; 1 - enable text box
+; 2 - clear text box
+(define statusstate
+  (lambda (z)
+    (cond
+      ((zero? z) (statusbox 'configure 'state: 'disabled))
+      ((= 1 z) (statusbox 'configure 'state: 'normal))
+      ((= 2 z) (statusbox 'delete '1.0 'end)))))
 
 (tk-event-loop)
