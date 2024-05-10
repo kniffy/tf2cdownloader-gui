@@ -17,12 +17,15 @@
     (define butler "bin\\butler.exe ")
     (define defaultdir "c:\\program files (x86)\\steam\\steamapps\\sourcemods"))
   (linux
-    (define tempdir "/var/tmp ")
+    (define tempdir "/var/tmp")
     (define downloader "bin/aria2c ")
     (define butler "bin/butler ")
     (define defaultdir
       (let ((user (get-environment-variable "USER")))
 	(conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))))
+
+;(define tf2cversion
+  ; todo parse rev.txt?)
 
 ; maybe get rid of a lot of these
 (define arialine
@@ -47,7 +50,10 @@
     "-l aria.log "
     "-d "
     tempdir
+    " "
     "http://fastdl.tildas.org/pub/100Mio.dat"))
+
+(define butlerline "")
 
 ; init
 (tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
@@ -66,7 +72,6 @@
 		  'textvariable: (tk-var 'userdir)
 		  'width: 55))
 
-; we can probably get a boilerplate button definition
 (define button0 (tk 'create-widget 'button
 		   'text: "Browse"
 		   'command: (lambda ()
@@ -117,29 +122,49 @@
 	(statusbox 'insert 'end "Download starting.. \n")
 
 	(with-input-from-port a (lambda ()
-				  (port-for-each (lambda (word)
-						   (statusbox 'insert 'end word)
-						   (statusbox 'insert 'end "\n")
-						   (statusbox 'see 'end))
-						 read-line)))
-; this is an empty line ======================================================
+		(port-for-each (lambda (word)
+				 (statusbox 'insert 'end (conc word "\n" ))
+				 (statusbox 'see 'end))
+			       read-line)))
+; ===== this is an empty line ================================================
 	(close-input-port a)
-	(close-output-port b)
+	(close-output-port b)	; we must close ports to exit aria2
+
+	(statusbox 'insert 'end "\n Preparing to unpack..")
+	(sleep 5)
+
+	; fuck it we ball (unpack)
+	(statusbox 'insert 'end "Unpacking.. \n")
+	(let-values (((d e f) (process (conc "tar xvf " tempdir "/tf2classic-latest.zst -C " (tk-get-var 'userdir)))))
+	  (with-input-from-port d (lambda ()
+		(port-for-each (lambda (word)
+				 (statusbox 'insert 'end (conc word "\n"))
+				 (statusbox 'see 'end))
+			       read-line)))
+; ===== this is an empty line ================================================
+	  (close-input-port d)
+	  (close-output-port e)
+	  (statusbox 'insert 'end "\n Unpacked!"))
+
 	(statusstate 0)
 	(buttonstate 1)))))
 
 (define upgradeproc
   (lambda ()
-    (display "clicked upgrade")))
+    (let-values (((a b c) (process (conc butler butlerline))))
+      (begin
+	(buttonstate 0)
+	(statusstate 1)
+	(statusstate 2)
+	(statusbox 'insert 'end "Upgrading.. \n")))))
 
 (define verifyproc
   (lambda ()
     (display "clicked verify")))
 
-;(define untar
-  ; todo call tar as subprocess
-  ; also figure out doing it on windows
-;)
+; todo call tar as subprocess
+; also figure out doing it on windows
+;(define untar)
 
 (define buttonstate
   (let ((dis "state disabled"))
@@ -150,15 +175,13 @@
 	  (button1 dis)
 	  (button2 dis)
 	  (button3 dis))
-	(begin
+	(begin	; for some fucking reason we cant boilerplate this bit
 	  (button0 'configure 'state: 'normal)
 	  (button1 'configure 'state: 'normal)
 	  (button2 'configure 'state: 'normal)
 	  (button3 'configure 'state: 'normal))))))
 
-; 0 - disable text box
-; 1 - enable text box
-; 2 - clear text box
+; 0, 1, 2 - disable, enable, clear
 (define statusstate
   (lambda (z)
     (cond
