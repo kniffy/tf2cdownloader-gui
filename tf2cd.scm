@@ -51,7 +51,7 @@
     "-d "
     tempdir
     " "
-    "http://fastdl.tildas.org/pub/100Mio.dat"))
+    "http://fastdl.tildas.org/pub/downloader/tf2classic-latest.meta4"))
 
 (define butlerline "")
 
@@ -93,7 +93,7 @@
 				(verifyproc))))
 
 (define statusbox (tk 'create-widget 'text
-		      'height: 10
+		      'height: 12
 		      'undo: 'false
 		      'relief: 'sunken
 		      'wrap: 'word
@@ -109,7 +109,7 @@
 (tk/grid button3 'row: 4 'column: 2)			; verify
 (tk/grid statusbox 'row: 6 'column: 0 'columnspan: 4)
 
-(entry 'insert 0 defaultdir)  ; we cant put this in the initialization
+(entry 'insert 0 defaultdir)		; we cant put this in the initialization
 
 ; our button click procedures etc below
 (define installproc
@@ -135,7 +135,7 @@
 
 	; fuck it we ball (unpack)
 	(statusbox 'insert 'end "Unpacking.. \n")
-	(let-values (((d e f) (process (conc "tar xvf " tempdir "/tf2classic-latest.zst -C " (tk-get-var 'userdir)))))
+	(let-values (((d e f) (process (conc "tar kxvf " tempdir "/tf2classic-?.?.?.tar.zst -C " (tk-get-var 'userdir)))))
 	  (with-input-from-port d (lambda ()
 		(port-for-each (lambda (word)
 				 (statusbox 'insert 'end (conc word "\n"))
@@ -144,7 +144,8 @@
 ; ===== this is an empty line ================================================
 	  (close-input-port d)
 	  (close-output-port e)
-	  (statusbox 'insert 'end "\n Unpacked!"))
+	  (statusbox 'insert 'end "\n Unpacked!")
+	  (statusbox 'see 'end))
 
 	(statusstate 0)
 	(buttonstate 1)))))
