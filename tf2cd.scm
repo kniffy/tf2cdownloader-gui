@@ -12,14 +12,14 @@
 ; set some platform-specific stuff
 (cond-expand
   (windows
-    (define tempdir "C:\\TEMP ")
-    (define downloader "bin\\aria2c.exe ")
-    (define butler "bin\\butler.exe ")
+    (define tempdir "C:\\TEMP")
+    (define downloader "bin\\aria2c.exe")
+    (define butler "bin\\butler.exe")
     (define defaultdir "c:\\program files (x86)\\steam\\steamapps\\sourcemods"))
   (linux
     (define tempdir "/var/tmp")
-    (define downloader "bin/aria2c ")
-    (define butler "bin/butler ")
+    (define downloader "bin/aria2c")
+    (define butler "bin/butler")
     (define defaultdir
       (let ((user (get-environment-variable "USER")))
 	(conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))))
@@ -29,26 +29,24 @@
 
 ; maybe get rid of a lot of these
 (define arialine
-  (conc
-    " "
-    "--enable-color=false "
-    "-x 16 "
-    "-UTF2CDownloadergui2024-05-10 "
-    "--allow-piece-length-change=true "
-    "-j 16 "
-    "--optimize-concurrent-downloads=true "
-    "--check-certificate=false "
-    "-V "
-    "--auto-file-renaming=false "
-    "-c "
-    "--allow-overwrite=true "
-    "--console-log-level=error "
-    "--summary-interval=5 "
-    "--bt-hash-check-seed=false "
-    "--seed-time=0 "
-    "-d "
+  (list
+    "--enable-color=false"
+    "-x 16"
+    "-UTF2CDownloadergui2024-05-10"
+    "--allow-piece-length-change=true"
+    "-j 16"
+    "--optimize-concurrent-downloads=true"
+    "--check-certificate=false"
+    "-V"
+    "--auto-file-renaming=false"
+    "-c"
+    "--allow-overwrite=true"
+    "--console-log-level=error"
+    "--summary-interval=5"
+    "--bt-hash-check-seed=false"
+    "--seed-time=0"
+    "-d"
     tempdir
-    " "
     "http://fastdl.tildas.org/pub/downloader/tf2classic-latest.meta4"))
 
 (define butlerline "")
@@ -110,9 +108,10 @@
 (entry 'insert 0 defaultdir)		; we cant put this in the initialization
 
 ; our button click procedures etc below
+; mind the parentheses, this bit is a mess
 (define installproc
   (lambda ()
-    (let-values (((a b c) (process (conc downloader arialine))))
+    (let-values (((a b c) (process downloader arialine)))
       (begin
 	(buttonstate 0)
 	(statusstate 1)
@@ -128,13 +127,22 @@
 	(close-input-port a)
 	(close-output-port b)	; we must close ports to exit aria2
 
-	(statusbox 'insert 'end "\n Preparing to unpack..")
+	(statusbox 'insert 'end "\n Preparing to unpack..\n")
 	(sleep 5)
 
 	; fuck it we ball (unpack)
 	(statusbox 'insert 'end "Unpacking.. \n")
 	(let-values (((d e f g) (process* (conc "tar kxvf " tempdir "/tf2classic-?.?.?.tar.zst -C " (tk-get-var 'userdir)))))
-	  (with-input-from-port g (lambda ()
+	  (with-input-from-port d (lambda ()
+		(port-for-each (lambda (word)
+				 (statusbox 'insert 'end (conc word "\n"))
+				 (statusbox 'see 'end))
+			       read-line)))
+	  (statusbox 'insert 'end "\n checking for error output..\n")
+	  (statusbox 'see 'end)
+	  (sleep 2)
+; ===== this is an empty line ================================================
+	  (with-input-from-port g (lambda()
 		(port-for-each (lambda (word)
 				 (statusbox 'insert 'end (conc word "\n"))
 				 (statusbox 'see 'end))
@@ -161,10 +169,6 @@
 (define verifyproc
   (lambda ()
     (display "clicked verify")))
-
-; todo call tar as subprocess
-; also figure out doing it on windows
-;(define untar)
 
 (define buttonstate
   (let ((dis "state disabled"))
