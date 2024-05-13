@@ -31,7 +31,6 @@
 (define arialine
   (conc
     " "
-;    "--show-console-readout=false "
     "--enable-color=false "
     "-x 16 "
     "-UTF2CDownloadergui2024-05-10 "
@@ -47,7 +46,6 @@
     "--summary-interval=5 "
     "--bt-hash-check-seed=false "
     "--seed-time=0 "
-    "-l aria.log "
     "-d "
     tempdir
     " "
@@ -66,7 +64,7 @@
 
 ; widget definitions
 (define label0 (tk 'create-widget 'label 'text: "sourcemods directory:"))
-(define label1 (tk 'create-widget 'label 'text: "tf2c detected:"))
+;(define label1 (tk 'create-widget 'label 'text: "tf2c detected:"))
 
 (define entry (tk 'create-widget 'entry
 		  'textvariable: (tk-var 'userdir)
@@ -135,8 +133,8 @@
 
 	; fuck it we ball (unpack)
 	(statusbox 'insert 'end "Unpacking.. \n")
-	(let-values (((d e f) (process (conc "tar kxvf " tempdir "/tf2classic-?.?.?.tar.zst -C " (tk-get-var 'userdir)))))
-	  (with-input-from-port d (lambda ()
+	(let-values (((d e f g) (process* (conc "tar kxvf " tempdir "/tf2classic-?.?.?.tar.zst -C " (tk-get-var 'userdir)))))
+	  (with-input-from-port g (lambda ()
 		(port-for-each (lambda (word)
 				 (statusbox 'insert 'end (conc word "\n"))
 				 (statusbox 'see 'end))
@@ -144,6 +142,7 @@
 ; ===== this is an empty line ================================================
 	  (close-input-port d)
 	  (close-output-port e)
+	  (close-input-port g)
 	  (statusbox 'insert 'end "\n Unpacked!")
 	  (statusbox 'see 'end))
 
