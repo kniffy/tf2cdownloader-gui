@@ -9,23 +9,31 @@
 
 (import (pstk))
 
+; TODO boilerplate the subprocess procedures
+; we need to call it multiple times, its too complex
+; to type every time
+
 ; set some platform-specific stuff
 (cond-expand
   (windows
     (define tempdir "C:\\TEMP")
     (define downloader "bin\\aria2c.exe")
     (define butler "bin\\butler.exe")
-    (define defaultdir "c:\\program files (x86)\\steam\\steamapps\\sourcemods"))
+    (define defaultdir "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
+    (define zstd "bin\\zstd.exe"))
   (linux
     (define tempdir "/var/tmp")
     (define downloader "bin/aria2c")
     (define butler "bin/butler")
     (define defaultdir
       (let ((user (get-environment-variable "USER")))
-	(conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))))
+	(conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))
+    (define zstd "zstd")))
 
-;(define tf2cversion
-  ; todo parse rev.txt?)
+; returns kb
+; todo check windows output
+(define freespaceline
+  "bin/df --output=avail /var/tmp | bin/tail -n 1")
 
 ; maybe get rid of a lot of these
 (define arialine
@@ -49,7 +57,8 @@
     tempdir
     "http://fastdl.tildas.org/pub/downloader/tf2classic-latest.meta4"))
 
-(define butlerline "")
+(define butlerline
+  (list))
 
 ; init
 (tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
@@ -169,6 +178,25 @@
 (define verifyproc
   (lambda ()
     (display "clicked verify")))
+
+; todo make this macro
+;(define subproc
+;  (lambda (cmd . args)))
+
+(define freespaceproc
+  (lambda ()
+    (let-values (((x y z a) (process* freespaceline)))
+      (with-input-from-port x (lambda ()
+	(port-for-each (lambda (word)
+			 (if (string->number word)
+			   (let ((p (string->number word)))
+			     (if (< p 20000000)
+			       (display "not enough space")
+			       (display "enough")))))
+		       read-line)))
+      (close-input-port x)
+      (close-output-port y)
+      (close-input-port a))))
 
 (define buttonstate
   (let ((dis "state disabled"))
