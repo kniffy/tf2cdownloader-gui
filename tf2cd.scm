@@ -33,7 +33,7 @@
 ; returns kb
 ; todo check windows output
 (define freespaceline
-  "bin/df --output=avail /var/tmp | bin/tail -n 1")
+  (list "--output=avail" tempdir))
 
 ; maybe get rid of a lot of these
 (define arialine
@@ -81,7 +81,10 @@
 		   'text: "Browse"
 		   'command: (lambda ()
 			       (let ((cd (tk/choose-directory 'initialdir: defaultdir 'mustexist: 'true)))
-				 (tk-set-var! 'userdir cd)))))
+				 (begin
+				   (tk-set-var! 'userdir cd)
+				   (freespaceproc (tk-get-var 'userdir)))))))
+
 (define button1 (tk 'create-widget 'button
 		    'text: "New Install"
 		    'command: (lambda ()
@@ -184,15 +187,21 @@
 ;  (lambda (cmd . args)))
 
 (define freespaceproc
-  (lambda ()
-    (let-values (((x y z a) (process* freespaceline)))
+  (lambda (dir)
+    (let-values (((x y z a) (process* "bin/df" (list "--output=avail" dir))))
       (with-input-from-port x (lambda ()
 	(port-for-each (lambda (word)
 			 (if (string->number word)
 			   (let ((p (string->number word)))
 			     (if (< p 20000000)
-			       (display "not enough space")
-			       (display "enough")))))
+			       (begin	;if
+				 (statusstate 1)
+				 (statusbox 'insert 'end "please ensure 20gb of free disk space\n")
+				 (statusstate 0))
+			       (begin	;else
+				 (statusstate 1)
+				 (statusbox 'insert 'end "Free space check: Passed\n")
+				 (statusstate 0))))))
 		       read-line)))
       (close-input-port x)
       (close-output-port y)
