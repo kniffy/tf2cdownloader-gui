@@ -144,7 +144,7 @@
 
 	; fuck it we ball (unpack)
 	(statusbox 'insert 'end "Unpacking.. \n")
-	(let-values (((d e f g) (process* (conc "tar kxvf " tempdir "/tf2classic-?.?.?.tar.zst -C " (tk-get-var 'userdir)))))
+	(let-values (((d e f g) (process* (conc "bin/tar -kxv -I bin/zstd -f " tempdir "/tf2classic-?.?.?.tar.zst -C " (tk-get-var 'userdir)))))
 	  (with-input-from-port d (lambda ()
 		(port-for-each (lambda (word)
 				 (statusbox 'insert 'end (conc word "\n"))
