@@ -30,12 +30,14 @@
 	(conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))
     (define zstd "zstd")))
 
-; returns kb
-; todo check windows output
-(define freespaceline
+; returns size in kb
+; we define a list and not a bigass string so as to not call
+; a whole shell for the subprocess; we dont want to touch shell quotations
+(define freespaceline	; todo check windows output
   (list "--output=avail" tempdir))
 
-; maybe get rid of a lot of these
+; todo generalize a bit, when called we'll add the file to leech to the end of
+; the list
 (define arialine
   (list
     "--enable-color=false"
@@ -83,7 +85,8 @@
 			       (let ((cd (tk/choose-directory 'initialdir: defaultdir 'mustexist: 'true)))
 				 (begin
 				   (tk-set-var! 'userdir cd)
-				   (freespaceproc (tk-get-var 'userdir)))))))
+				   (freespaceproc (tk-get-var 'userdir))
+				   (patchfile))))))
 
 (define button1 (tk 'create-widget 'button
 		    'text: "New Install"
@@ -118,6 +121,24 @@
 (tk/grid statusbox 'row: 6 'column: 0 'columnspan: 4)
 
 (entry 'insert 0 defaultdir)		; we cant put this in the initialization
+
+; we need some definitions down here to get around delayed-eval gremlins
+; tk is a fuck with touching its precious variables, so we call tk-get-var
+; todo check for file existence first
+(define patchfile
+  (lambda ()
+    (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"])
+      (if (file-exists? (conc dir file))
+	(let ([ver (string->number (read-line (open-input-file (conc dir file))))])
+	  (define full (conc "tf2classic-patch" (- 1 ver) "-" ver ".pwr"))
+	  (begin
+	    (statusstate 1)
+	    (statusbox 'insert 'end "tf2c install found?")
+	    (statusstate 0)))
+	(begin	; else case
+	  (statusstate 1)
+	  (statusbox 'insert 'end "tf2c installation not found\n")
+	  (statusstate 0))))))
 
 ; our button click procedures etc below
 ; mind the parentheses, this bit is a mess
