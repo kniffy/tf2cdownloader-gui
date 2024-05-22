@@ -196,7 +196,7 @@
 			     (if (< p 20000000)
 			       (begin	;if
 				 (statusstate 1)
-				 (statusbox 'insert 'end "please ensure 20gb of free disk space\n")
+				 (statusbox 'insert 'end "Free space check: Failed?\n at least 20gb needed!\n")
 				 (statusstate 0))
 			       (begin	;else
 				 (statusstate 1)
