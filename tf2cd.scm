@@ -124,7 +124,8 @@
 
 ; we need some definitions down here to get around delayed-eval gremlins
 ; tk is a fuck with touching its precious variables, so we call tk-get-var
-; todo check for file existence first
+; todo what do we do when the patch file doesnt exist on the server?
+; we still need to do a network poke to see, so i guess we watch aria2?
 (define patchfile
   (lambda ()
     (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"])
