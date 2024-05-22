@@ -130,22 +130,22 @@
   (lambda ()
     (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"])
       (if (file-exists? (conc dir file))
-	(let ([ver (string->number (read-line (open-input-file (conc dir file))))])
-	  (define full (conc "tf2classic-patch" (- 1 ver) "-" ver ".pwr"))
-	  (begin
-	    (statusstate 1)
-	    (statusbox 'insert 'end "tf2c install found?")
-	    (statusstate 0)))
-	(begin	; else case
-	  (statusstate 1)
-	  (statusbox 'insert 'end "tf2c installation not found\n")
-	  (statusstate 0))))))
+	        (let ([ver (string->number (read-line (open-input-file (conc dir file))))])
+	          (define full (conc "tf2classic-patch" (- 1 ver) "-" ver ".pwr"))
+	          (begin
+	            (statusstate 1)
+	            (statusbox 'insert 'end "tf2c installation: found\n")
+	            (statusstate 0)))
+	        (begin	; else case
+	          (statusstate 1)
+	          (statusbox 'insert 'end "tf2c installation: not found\n")
+	          (statusstate 0))))))
 
 ; our button click procedures etc below
 ; mind the parentheses, this bit is a mess
 (define installproc
   (lambda ()
-    (let-values (((a b c) (process downloader arialine)))
+    (let-values ([(a b c) (process downloader arialine)])
       (begin
 	(buttonstate 0)
 	(statusstate 1)
@@ -166,7 +166,7 @@
 
 	; fuck it we ball (unpack)
 	(statusbox 'insert 'end "Unpacking.. \n")
-	(let-values (((d e f g) (process* (conc "bin/tar -kxv -I bin/zstd -f " tempdir "/tf2classic-?.?.?.tar.zst -C " (tk-get-var 'userdir)))))
+	(let-values ([(d e f g) (process* (conc "bin/tar -kxv -I bin/zstd -f " tempdir "/tf2classic-?.?.?.tar.zst -C " (tk-get-var 'userdir)))])
 	  (with-input-from-port d (lambda ()
 		(port-for-each (lambda (word)
 				 (statusbox 'insert 'end (conc word "\n"))
@@ -185,7 +185,7 @@
 	  (close-input-port d)
 	  (close-output-port e)
 	  (close-input-port g)
-	  (statusbox 'insert 'end "\n Unpacked!")
+	  (statusbox 'insert 'end "\n Unpacked!\n")
 	  (statusbox 'see 'end))
 
 	(statusstate 0)
@@ -193,12 +193,12 @@
 
 (define upgradeproc
   (lambda ()
-    (let-values (((a b c) (process (conc butler butlerline))))
+    (let-values ([(a b c) (process (conc butler butlerline))])
       (begin
-	(buttonstate 0)
-	(statusstate 1)
-	(statusstate 2)
-	(statusbox 'insert 'end "Upgrading.. \n")))))
+	      (buttonstate 0)
+	      (statusstate 1)
+	      (statusstate 2)
+	      (statusbox 'insert 'end "Upgrading.. \n")))))
 
 (define verifyproc
   (lambda ()
@@ -210,27 +210,27 @@
 
 (define freespaceproc
   (lambda (dir)
-    (let-values (((x y z a) (process* "bin/df" (list "--output=avail" dir))))
+    (let-values ([(x y z a) (process* "bin/df" (list "--output=avail" dir))])
       (with-input-from-port x (lambda ()
-	(port-for-each (lambda (word)
-			 (if (string->number word)
-			   (let ((p (string->number word)))
-			     (if (< p 20000000)
-			       (begin	;if
-				 (statusstate 1)
-				 (statusbox 'insert 'end "Free space check: Failed?\n at least 20gb needed!\n")
-				 (statusstate 0))
-			       (begin	;else
-				 (statusstate 1)
-				 (statusbox 'insert 'end "Free space check: Passed\n")
-				 (statusstate 0))))))
-		       read-line)))
+                                (port-for-each (lambda (word)
+			                                           (if (string->number word)
+			                                               (let ((p (string->number word)))
+			                                                 (if (< p 20000000)
+			                                                     (begin	; true case
+				                                                     (statusstate 1)
+				                                                     (statusbox 'insert 'end "Free space check: Failed?\n at least 20gb needed!\n")
+				                                                     (statusstate 0))
+			                                                     (begin	; else case
+				                                                     (statusstate 1)
+				                                                     (statusbox 'insert 'end "Free space check: Passed\n")
+				                                                     (statusstate 0))))))
+		                                           read-line)))
       (close-input-port x)
       (close-output-port y)
       (close-input-port a))))
 
 (define buttonstate
-  (let ((dis "state disabled"))
+  (let ([dis "state disabled"])
     (lambda (z)
       (if (zero? z)
 	(begin
