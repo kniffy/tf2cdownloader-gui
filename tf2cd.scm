@@ -13,6 +13,10 @@
 ; we need to call it multiple times, its too complex
 ; to type every time
 
+; NOTE our variable definitions generally go up here,
+; but for cursed reasons some of them are below, under
+; the tk gui block, tk is a bitch with passing vars
+
 ; set some platform-specific stuff
 (cond-expand
   (windows
@@ -130,16 +134,16 @@
   (lambda ()
     (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"])
       (if (file-exists? (conc dir file))
-	        (let ([ver (string->number (read-line (open-input-file (conc dir file))))])
-	          (define full (conc "tf2classic-patch" (- 1 ver) "-" ver ".pwr"))
-	          (begin
-	            (statusstate 1)
-	            (statusbox 'insert 'end "tf2c installation: found\n")
-	            (statusstate 0)))
-	        (begin	; else case
-	          (statusstate 1)
-	          (statusbox 'insert 'end "tf2c installation: not found\n")
-	          (statusstate 0))))))
+	(let ([ver (string->number (read-line (open-input-file (conc dir file))))])
+	  (define full (conc "tf2classic-patch" (- 1 ver) "-" ver ".pwr"))
+	  (begin
+	    (statusstate 1)
+	    (statusbox 'insert 'end "tf2c installation: found\n")
+	    (statusstate 0)))
+	(begin	; else case
+	  (statusstate 1)
+	  (statusbox 'insert 'end "tf2c installation: not found\n")
+	  (statusstate 0))))))
 
 ; our button click procedures etc below
 ; mind the parentheses, this bit is a mess
@@ -212,19 +216,19 @@
   (lambda (dir)
     (let-values ([(x y z a) (process* "bin/df" (list "--output=avail" dir))])
       (with-input-from-port x (lambda ()
-                                (port-for-each (lambda (word)
-			                                           (if (string->number word)
-			                                               (let ((p (string->number word)))
-			                                                 (if (< p 20000000)
-			                                                     (begin	; true case
-				                                                     (statusstate 1)
-				                                                     (statusbox 'insert 'end "Free space check: Failed?\n at least 20gb needed!\n")
-				                                                     (statusstate 0))
-			                                                     (begin	; else case
-				                                                     (statusstate 1)
-				                                                     (statusbox 'insert 'end "Free space check: Passed\n")
-				                                                     (statusstate 0))))))
-		                                           read-line)))
+	(port-for-each (lambda (word)
+			 (if (string->number word)
+			   (let ((p (string->number word)))
+			     (if (< p 20000000)
+			       (begin	; true case
+				 (statusstate 1)
+				 (statusbox 'insert 'end "Free space check: Failed?\n at least 20gb needed!\n")
+				 (statusstate 0))
+			       (begin	; else case
+				 (statusstate 1)
+				 (statusbox 'insert 'end "Free space check: Passed\n")
+				 (statusstate 0))))))
+		       read-line)))
       (close-input-port x)
       (close-output-port y)
       (close-input-port a))))
