@@ -30,7 +30,7 @@
     (define downloader "bin/aria2c")
     (define butler "bin/butler")
     (define defaultdir
-      (let ((user (get-environment-variable "USER")))
+      (let ([user (get-environment-variable "USER")])
 	      (conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))))
 
 ; returns size in kb
@@ -85,7 +85,7 @@
 (define button0 (tk 'create-widget 'button
 		   'text: "Browse"
 		   'command: (lambda ()
-			       (let ((cd (tk/choose-directory 'initialdir: defaultdir 'mustexist: 'true)))
+			       (let ([cd (tk/choose-directory 'initialdir: defaultdir 'mustexist: 'true)])
 				 (begin
 				   (tk-set-var! 'userdir cd)
 				   (freespaceproc (tk-get-var 'userdir))
@@ -198,10 +198,10 @@
   (lambda ()
     (let-values ([(a b c) (process (conc butler butlerline))])
       (begin
-	      (buttonstate 0)
-	      (statusstate 1)
-	      (statusstate 2)
-	      (statusbox 'insert 'end "Upgrading.. \n")))))
+	(buttonstate 0)
+	(statusstate 1)
+	(statusstate 2)
+	(statusbox 'insert 'end "Upgrading.. \n")))))
 
 (define verifyproc
   (lambda ()
@@ -215,18 +215,18 @@
   (lambda (dir)
     (let-values ([(x y z a) (process* "bin/df" (list "--output=avail" dir))])
       (with-input-from-port x (lambda ()
-	(port-for-each (lambda (word)
-			 (if (string->number word)
-			   (let ((p (string->number word)))
-			     (if (< p 20000000)
-			       (begin	; true case
-				 (statusstate 1)
-				 (statusbox 'insert 'end "Free space check: Failed?\n at least 20gb needed!\n")
-				 (statusstate 0))
-			       (begin	; else case
-				 (statusstate 1)
-				 (statusbox 'insert 'end "Free space check: Passed\n")
-				 (statusstate 0))))))
+        (port-for-each (lambda (word)
+          (if (string->number word)
+            (let ([p (string->number word)])
+	      (if (< p 20000000)
+		(begin	; true case
+		  (statusstate 1)
+		  (statusbox 'insert 'end "Free space check: Failed?\n at least 20gb needed!\n")
+		  (statusstate 0))
+		(begin	; else case
+		  (statusstate 1)
+		  (statusbox 'insert 'end "Free space check: Passed\n")
+		  (statusstate 0))))))
 		       read-line)))
       (close-input-port x)
       (close-output-port y)
