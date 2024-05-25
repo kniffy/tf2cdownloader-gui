@@ -23,16 +23,15 @@
     (define tempdir "C:\\TEMP")
     (define downloader "bin\\aria2c.exe")
     (define butler "bin\\butler.exe")
-    (define defaultdir "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
-    (define zstd "bin\\zstd.exe"))
+    (define defaultdir "c:\\program files (x86)\\steam\\steamapps\\sourcemods"))
+
   (linux
     (define tempdir "/var/tmp")
     (define downloader "bin/aria2c")
     (define butler "bin/butler")
     (define defaultdir
       (let ((user (get-environment-variable "USER")))
-	(conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))
-    (define zstd "zstd")))
+	      (conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))))
 
 ; returns size in kb
 ; we define a list and not a bigass string so as to not call
