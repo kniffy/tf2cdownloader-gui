@@ -38,8 +38,6 @@
 ; a whole shell for the subprocess; we dont want to touch shell quotations
 (define freespaceline (list "--output=avail" tempdir)) ; todo check windows output
 
-; todo generalize a bit, when called we'll add the file to leech to the end of
-; the list
 (define arialine
   (list
     "--enable-color=false"
@@ -76,7 +74,6 @@
 
 ; widget definitions
 (define label0 (tk 'create-widget 'label 'text: "sourcemods directory:"))
-;(define label1 (tk 'create-widget 'label 'text: "tf2c detected:"))
 
 (define entry (tk 'create-widget 'entry
 		  'textvariable: (tk-var 'userdir)
