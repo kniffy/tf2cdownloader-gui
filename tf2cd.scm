@@ -36,8 +36,7 @@
 ; returns size in kb
 ; we define a list and not a bigass string so as to not call
 ; a whole shell for the subprocess; we dont want to touch shell quotations
-(define freespaceline	; todo check windows output
-  (list "--output=avail" tempdir))
+(define freespaceline (list "--output=avail" tempdir)) ; todo check windows output
 
 ; todo generalize a bit, when called we'll add the file to leech to the end of
 ; the list
@@ -59,8 +58,9 @@
     "--bt-hash-check-seed=false"
     "--seed-time=0"
     "-d"
-    tempdir
-    "http://fastdl.tildas.org/pub/downloader/tf2classic-latest.meta4"))
+    tempdir))
+
+(define fullurl "http://fastdl.tildas.org/pub/downloader/tf2classic-latest.meta4")
 
 (define butlerline
   (list))
@@ -148,7 +148,7 @@
 ; mind the parentheses, this bit is a mess
 (define installproc
   (lambda ()
-    (let-values ([(a b c) (process downloader arialine)])
+    (let-values ([(a b c) (process downloader (append arialine (list fullurl)))])
       (begin
 	(buttonstate 0)
 	(statusstate 1)
