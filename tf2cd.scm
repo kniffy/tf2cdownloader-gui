@@ -86,7 +86,7 @@
 				 (begin
 				   (tk-set-var! 'userdir cd)
 				   (freespaceproc (tk-get-var 'userdir))
-				   (patchfile))))))
+				   (currentpatchfile))))))
 
 (define button1 (tk 'create-widget 'button
 		    'text: "New Install"
@@ -126,7 +126,7 @@
 ; tk is a fuck with touching its precious variables, so we call tk-get-var
 ; todo what do we do when the patch file doesnt exist on the server?
 ; we still need to do a network poke to see, so i guess we watch aria2?
-(define patchfile
+(define currentpatchfile
   (lambda ()
     (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"])
       (if (file-exists? (conc dir file))
@@ -165,6 +165,7 @@
 	(sleep 5)
 
 	; fuck it we ball (unpack)
+  ; we pass in a bigass string here, its a mess evaluating it as a list
 	(statusbox 'insert 'end "Unpacking.. \n")
 	(let-values ([(d e f g) (process* (conc "bin/tar -kxv -I bin/zstd -f " tempdir "/tf2classic-?.?.?.tar.zst -C " (tk-get-var 'userdir)))])
 	  (with-input-from-port d (lambda ()
@@ -172,7 +173,7 @@
 				 (statusbox 'insert 'end (conc word "\n"))
 				 (statusbox 'see 'end))
 			       read-line)))
-	  (statusbox 'insert 'end "\n checking for error output..\n")
+	  ;(statusbox 'insert 'end "\n checking for error output..\n")
 	  (statusbox 'see 'end)
 	  (sleep 2)
 ; ===== this is an empty line ================================================
@@ -229,6 +230,7 @@
       (close-output-port y)
       (close-input-port a))))
 
+; we simplify some of the management of state
 (define buttonstate
   (let ([dis "state disabled"])
     (lambda (z)
