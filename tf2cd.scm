@@ -151,9 +151,7 @@
 	(statusstate 1)
 	(statusstate 2)
 	(statusbox 'insert 'end "Download starting.. \n")
-
 	(display->status a)   ; print the process's console
-
 	(close-input-port a)
 	(close-output-port b)	; we must close ports to exit subprocess
 
@@ -161,21 +159,17 @@
 	(sleep 5)
 
 	; fuck it we ball (unpack)
-        ; we pass in a bigass string here, its a mess evaluating it as a list
 	(statusbox 'insert 'end "Unpacking.. \n")
 
+	; we pass in a bigass string here, its a mess evaluating is as a list
 	(let-values ([(d e f g) (process* (conc "bin/tar -kxv -I bin/zstd -f " tempdir "/tf2classic-?.?.?.tar.zst -C " (tk-get-var 'userdir)))])
 	  (display->status d)
 	  ;(statusbox 'insert 'end "\n checking for error output..\n")
-	  ;(statusbox 'see 'end)
 	  (sleep 2)
-
 	  (display->status g)
-
 	  (close-input-port d)
 	  (close-output-port e)
 	  (close-input-port g)
-
 	  (statusbox 'insert 'end "\n Unpacked!\n")
 	  (statusbox 'see 'end))
 
