@@ -152,45 +152,44 @@
 	(statusstate 2)
 	(statusbox 'insert 'end "Download starting.. \n")
 
-	(with-input-from-port a (lambda ()
-		(port-for-each (lambda (word)
-				 (statusbox 'insert 'end (conc word "\n" ))
-				 (statusbox 'see 'end))
-			       read-line)))
-; ===== this is an empty line ================================================
+	(display->status a)   ; print the process's console
+
 	(close-input-port a)
-	(close-output-port b)	; we must close ports to exit aria2
+	(close-output-port b)	; we must close ports to exit subprocess
 
 	(statusbox 'insert 'end "\n Preparing to unpack..\n")
 	(sleep 5)
 
 	; fuck it we ball (unpack)
-  ; we pass in a bigass string here, its a mess evaluating it as a list
+        ; we pass in a bigass string here, its a mess evaluating it as a list
 	(statusbox 'insert 'end "Unpacking.. \n")
+
 	(let-values ([(d e f g) (process* (conc "bin/tar -kxv -I bin/zstd -f " tempdir "/tf2classic-?.?.?.tar.zst -C " (tk-get-var 'userdir)))])
-	  (with-input-from-port d (lambda ()
-		(port-for-each (lambda (word)
-				 (statusbox 'insert 'end (conc word "\n"))
-				 (statusbox 'see 'end))
-			       read-line)))
+	  (display->status d)
 	  ;(statusbox 'insert 'end "\n checking for error output..\n")
-	  (statusbox 'see 'end)
+	  ;(statusbox 'see 'end)
 	  (sleep 2)
-; ===== this is an empty line ================================================
-	  (with-input-from-port g (lambda()
-		(port-for-each (lambda (word)
-				 (statusbox 'insert 'end (conc word "\n"))
-				 (statusbox 'see 'end))
-			       read-line)))
-; ===== this is an empty line ================================================
+
+	  (display->status g)
+
 	  (close-input-port d)
 	  (close-output-port e)
 	  (close-input-port g)
+
 	  (statusbox 'insert 'end "\n Unpacked!\n")
 	  (statusbox 'see 'end))
 
 	(statusstate 0)
 	(buttonstate 1)))))
+
+(define display->status
+  (lambda (port)
+    (with-input-from-port port
+      (lambda ()
+        (port-for-each (lambda (word)
+                         (statusbox 'insert 'end (conc word "\n"))
+                         (statusbox 'see 'end))
+                       read-line)))))
 
 (define upgradeproc
   (lambda ()
