@@ -60,17 +60,21 @@
     "-d"
     tempdir))
 
-(define fullurl "http://fastdl.tildas.org/pub/downloader/tf2classic-latest.meta4")
-
 (define butlerline (list))
 
-; init
+(define partialurl "http://fastdl.tildas.org/pub/downloader")
+(define fulltarballurl (conc partialurl "/tf2classic-latest.meta4"))
+
+; we set this later in the version detection procedure
+(define patchfile)
+
+; tk init
 (tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
 (ttk-map-widgets 'all) ; use the ttk widget set
 (tk/wm 'title tk "tf2cdownloader")
 (tk 'configure 'height: 600 'width: 800)
 
-; for some reason we must 'initialize' tk vars like so
+; we must initialize tk vars like so
 (tk-var 'userdir)
 
 ; widget definitions
@@ -87,7 +91,7 @@
 				 (begin
 				   (tk-set-var! 'userdir cd)
 				   (freespaceproc (tk-get-var 'userdir))
-				   (currentpatchfile))))))
+				   (versiondetectproc))))))
 
 (define button1 (tk 'create-widget 'button
 		    'text: "New Install"
@@ -127,12 +131,13 @@
 ; tk is a fuck with touching its precious variables, so we call tk-get-var
 ; todo what do we do when the patch file doesnt exist on the server?
 ; we still need to do a network poke to see, so i guess we watch aria2?
-(define currentpatchfile
+(define versiondetectproc
   (lambda ()
     (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"])
       (if (file-exists? (conc dir file))
 	(let ([ver (string->number (read-line (open-input-file (conc dir file))))])
 	  (define full (conc "tf2classic-patch" (- 1 ver) "-" ver ".pwr"))
+	  (set! patchfile full)
 	  (begin
 	    (statusstate 1)
 	    (statusbox 'insert 'end "tf2c installation: found\n")
@@ -160,7 +165,6 @@
 	; fuck it we ball (unpack)
 	(statusbox 'insert 'end "Unpacking.. \n")
 
-	; we pass in a bigass string here, its a mess evaluating is as a list
 	(let-values ([(d e f g) (process* (conc "bin/tar -kxv -I bin/zstd -f " tempdir "/tf2classic-?.?.?.tar.zst -C " (tk-get-var 'userdir)))])
 	  (display->status d)
 	  ;(statusbox 'insert 'end "\n checking for error output..\n")
