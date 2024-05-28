@@ -9,10 +9,6 @@
 
 (import (pstk))
 
-; TODO boilerplate the subprocess procedures
-; we need to call it multiple times, its too complex
-; to type every time
-
 ; NOTE our variable definitions generally go up here,
 ; but for cursed reasons some of them are below, under
 ; the tk gui block, tk is a bitch with passing vars
@@ -129,7 +125,7 @@
 
 ; we need some definitions down here to get around delayed-eval gremlins
 ; tk is a fuck with touching its precious variables, so we call tk-get-var
-; todo what do we do when the patch file doesnt exist on the server?
+; TODO what do we do when the patch file doesnt exist on the server?
 ; we still need to do a network poke to see, so i guess we watch aria2?
 (define versiondetectproc
   (lambda ()
@@ -179,15 +175,6 @@
 	(statusstate 0)
 	(buttonstate 1)))))
 
-(define display->status
-  (lambda (port)
-    (with-input-from-port port
-      (lambda ()
-        (port-for-each (lambda (word)
-                         (statusbox 'insert 'end (conc word "\n"))
-                         (statusbox 'see 'end))
-                       read-line)))))
-
 (define upgradeproc
   (lambda ()
     (let-values ([(a b c) (process (conc butler butlerline))])
@@ -200,10 +187,6 @@
 (define verifyproc
   (lambda ()
     (display "clicked verify")))
-
-; todo make this macro
-;(define subproc
-;  (lambda (cmd . args)))
 
 (define freespaceproc
   (lambda (dir)
@@ -226,6 +209,17 @@
       (close-output-port y)
       (close-input-port a))))
 
+; input is a port, iterates and prints the lines to the status box widget
+; until it hits EOF - dont forget setting the box's state before/after use
+(define display->status
+  (lambda (port)
+    (with-input-from-port port
+		  (lambda ()
+        (port-for-each (lambda (word)
+                         (statusbox 'insert 'end (conc word "\n"))
+                         (statusbox 'see 'end))
+                       read-line)))))
+
 ; we simplify some of the management of state
 (define buttonstate
   (let ([dis "state disabled"])
@@ -236,7 +230,7 @@
 	  (button1 dis)
 	  (button2 dis)
 	  (button3 dis))
-	(begin	; for some fucking reason we cant boilerplate this bit
+	(begin	; for some fucking reason we cant boilerplate this bit?
 	  (button0 'configure 'state: 'normal)
 	  (button1 'configure 'state: 'normal)
 	  (button2 'configure 'state: 'normal)
