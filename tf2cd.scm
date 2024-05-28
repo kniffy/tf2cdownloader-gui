@@ -23,7 +23,8 @@
     (define tempdir "C:\\TEMP")
     (define downloader "bin\\aria2c.exe")
     (define butler "bin\\butler.exe")
-    (define defaultdir "c:\\program files (x86)\\steam\\steamapps\\sourcemods"))
+    (define defaultdir "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
+    (define lct "bin\\tclkit.exe"))
 
   (linux
     (define tempdir "/var/tmp")
@@ -31,7 +32,8 @@
     (define butler "bin/butler")
     (define defaultdir
       (let ([user (get-environment-variable "USER")])
-	      (conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))))
+	      (conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))
+    (define lct "bin/tclkit")))
 
 ; returns size in kb
 ; we define a list and not a bigass string so as to not call
@@ -60,8 +62,7 @@
 
 (define fullurl "http://fastdl.tildas.org/pub/downloader/tf2classic-latest.meta4")
 
-(define butlerline
-  (list))
+(define butlerline (list))
 
 ; init
 (tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
@@ -150,12 +151,10 @@
 	(buttonstate 0)
 	(statusstate 1)
 	(statusstate 2)
-	(statusbox 'insert 'end "Download starting.. \n")
 	(display->status a)   ; print the process's console
 	(close-input-port a)
 	(close-output-port b)	; we must close ports to exit subprocess
 
-	(statusbox 'insert 'end "\n Preparing to unpack..\n")
 	(sleep 5)
 
 	; fuck it we ball (unpack)
