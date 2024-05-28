@@ -20,7 +20,10 @@
     (define downloader "bin\\aria2c.exe")
     (define butler "bin\\butler.exe")
     (define defaultdir "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
-    (define lct "bin\\tclkit.exe"))
+    (define lct "bin\\tclkit.exe")
+    (define df "bin\\df")
+    (define tar "bin\\tar")
+    (define zstd "bin\\zstd"))
 
   (linux
     (define tempdir "/var/tmp")
@@ -29,7 +32,10 @@
     (define defaultdir
       (let ([user (get-environment-variable "USER")])
 	      (conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))
-    (define lct "bin/tclkit")))
+    (define lct "bin/tclkit")
+    (define df "bin/df")
+    (define tar "bin/tar")
+    (define zstd "bin/zstd")))
 
 ; returns size in kb
 ; we define a list and not a bigass string so as to not call
@@ -165,7 +171,7 @@
 	; fuck it we ball (unpack)
 	(statusbox 'insert 'end "Unpacking.. \n")
 
-	(let-values ([(d e f g) (process* (conc "bin/tar -kxv -I bin/zstd -f " tempdir "/tf2classic-?.?.?.tar.zst -C " (tk-get-var 'userdir)))])
+	(let-values ([(d e f g) (process* (conc tar " -kxv -I " zstd " -f " tempdir "/tf2classic-?.?.?.tar.zst -C " (tk-get-var 'userdir)))])
 	  (display->status d)
 	  ;(statusbox 'insert 'end "\n checking for error output..\n")
 	  (sleep 2)
@@ -202,7 +208,7 @@
 
 (define freespaceproc
   (lambda (dir)
-    (let-values ([(x y z a) (process* "bin/df" (list "--output=avail" dir))])
+    (let-values ([(x y z a) (process* df (list "--output=avail" dir))])
       (with-input-from-port x (lambda ()
         (port-for-each (lambda (word)
           (if (string->number word)
