@@ -125,19 +125,22 @@
 
 ; we need some definitions down here to get around delayed-eval gremlins
 ; tk is a fuck with touching its precious variables, so we call tk-get-var
-; TODO what do we do when the patch file doesnt exist on the server?
-; we still need to do a network poke to see, so i guess we watch aria2?
+
 ; TODO simplify this a bit, patch file format is *-patch-(oldver)-(latest).pwr
+; for now we hard code latest version (2.1.4 as of writing)
 (define versiondetectproc
   (lambda ()
-    (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"])
+    (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"] [latest 214] [full ""])
       (if (file-exists? (conc dir file))
 	(let ([ver (string->number (read-line (open-input-file (conc dir file))))])
-	  (define full (conc "tf2classic-patch" (- 1 ver) "-" ver ".pwr"))
-	  (set! patchfile full)
+	  (if (not (= ver latest))
+	    (begin
+	      (set! full (conc "tf2classic-patch" "-" ver "-" latest ".pwr"))
+	      (set! patchfile full)))
 	  (begin
 	    (statusstate 1)
 	    (statusbox 'insert 'end "tf2c installation: found\n")
+	    (statusbox 'insert 'end (conc "version " ver " detected\n"))
 	    (statusstate 0)))
 	(begin	; else case
 	  (statusstate 1)
@@ -180,9 +183,9 @@
   (lambda ()
     (let-values ([(a b c) (process downloader (append arialine (list (conc partialurl "/" patchfile))))])
       (begin
-        (buttonstate 0)
-        (statusstate 1)
-        (statusstate 2)
+	(buttonstate 0)
+	(statusstate 1)
+	(statusstate 2)
         (display->status a)
         (close-input-port a)
         (close-output-port b)
