@@ -127,6 +127,7 @@
 ; tk is a fuck with touching its precious variables, so we call tk-get-var
 ; TODO what do we do when the patch file doesnt exist on the server?
 ; we still need to do a network poke to see, so i guess we watch aria2?
+; TODO simplify this a bit, patch file format is *-patch-(oldver)-(latest).pwr
 (define versiondetectproc
   (lambda ()
     (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"])
@@ -147,7 +148,7 @@
 ; mind the parentheses, this bit is a mess
 (define installproc
   (lambda ()
-    (let-values ([(a b c) (process downloader (append arialine (list fullurl)))])
+    (let-values ([(a b c) (process downloader (append arialine (list fulltarballurl)))])
       (begin
 	(buttonstate 0)
 	(statusstate 1)
@@ -177,12 +178,20 @@
 
 (define upgradeproc
   (lambda ()
-    (let-values ([(a b c) (process (conc butler butlerline))])
+    (let-values ([(a b c) (process downloader (append arialine (list (conc partialurl "/" patchfile))))])
       (begin
-	(buttonstate 0)
-	(statusstate 1)
-	(statusstate 2)
-	(statusbox 'insert 'end "Upgrading.. \n")))))
+        (buttonstate 0)
+        (statusstate 1)
+        (statusstate 2)
+        (display->status a)
+        (close-input-port a)
+        (close-output-port b)
+        (statusbox 'insert 'end "patch downloaded?\n")
+
+        (sleep 5)
+
+        (statusstate 0)
+        (buttonstate 1)))))
 
 (define verifyproc
   (lambda ()
