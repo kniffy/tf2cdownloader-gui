@@ -46,7 +46,7 @@
   (list
     "--enable-color=false"
     "-x 16"
-    "-UTF2CDownloadergui2024-05-10"
+    "-UTF2CDownloadergui2024-05-30"
     "--allow-piece-length-change=true"
     "-j 16"
     "--optimize-concurrent-downloads=true"
@@ -62,16 +62,25 @@
     "-d"
     tempdir))
 
+(define ariaversionline
+  (list "--enable-color=false"
+        "-UTF2CDownloadergui2024-05-30"
+        "--allow-overwrite=true"
+        "-d"
+        tempdir))
+
 (define butlerline (list))
 
 (define partialurl "http://fastdl.tildas.org/pub/downloader")
 (define fulltarballurl (conc partialurl "/tf2classic-latest.meta4"))
+(define revtxt "current")
 
 ; we set this later in the version detection procedure
 (define patchfile)
 
 ; tk init
-(tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
+;(tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
+(tk-start lct)
 (ttk-map-widgets 'all) ; use the ttk widget set
 (ttk/set-theme "clam")
 (tk/wm 'title tk "tf2cdownloader")
@@ -93,13 +102,16 @@
 			       (let ([cd (tk/choose-directory 'initialdir: defaultdir 'mustexist: 'true)])
 				 (begin
 				   (tk-set-var! 'userdir cd)
+				   (findlatestversion)
 				   (freespaceproc (tk-get-var 'userdir))
 				   (versiondetectproc))))))
 
 (define button1 (tk 'create-widget 'button
 		    'text: "New Install"
 		    'command: (lambda ()
-				(installproc))))
+				(begin
+				  (findlatestversion)
+				  (installproc)))))
 
 (define button2 (tk 'create-widget 'button
 		    'text: "Upgrade"
@@ -135,16 +147,28 @@
 ; we need some definitions down here to get around delayed-eval gremlins
 ; tk is a fuck with touching its precious variables, so we call tk-get-var
 
-; TODO simplify this a bit, patch file format is *-patch-(oldver)-(latest).pwr
-; for now we hard code latest version (2.1.4 as of writing)
+(define *currentver*)
+
+(define findlatestversion
+  (lambda ()
+    (if (not (file-exists? (conc tempdir "/" revtxt)))
+        (let-values ([(a b c) (process downloader (append ariaversionline (list (conc partialurl "/" revtxt))))])
+          (begin
+            (display->status a)
+            (close-input-port a)
+            (close-output-port b))))
+
+    (let ([ver (string->number (read-line (open-input-file (conc tempdir "/" revtxt))))])
+      (set! *currentver* ver))))
+
 (define versiondetectproc
   (lambda ()
-    (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"] [latest 214] [full ""])
+    (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"] [full ""])
       (if (file-exists? (conc dir file))
 	(let ([ver (string->number (read-line (open-input-file (conc dir file))))])
-	  (if (not (= ver latest))
+	  (if (not (= ver *currentver*))
 	    (begin
-	      (set! full (conc "tf2classic-patch" "-" ver "-" latest ".pwr"))
+	      (set! full (conc "tf2classic-patch" "-" ver "-" *currentver* ".pwr"))
 	      (set! patchfile full)))
 	  (begin
 	    (statusstate 1)
