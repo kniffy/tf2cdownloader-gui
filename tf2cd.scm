@@ -73,6 +73,7 @@
 ; tk init
 (tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
 (ttk-map-widgets 'all) ; use the ttk widget set
+(ttk/set-theme "clam")
 (tk/wm 'title tk "tf2cdownloader")
 (tk 'configure 'height: 600 'width: 800)
 
@@ -102,11 +103,13 @@
 
 (define button2 (tk 'create-widget 'button
 		    'text: "Upgrade"
+		    'state: 'disabled
 		    'command: (lambda ()
 				(upgradeproc))))
 
 (define button3 (tk 'create-widget 'button
 		    'text: "Verify"
+		    'state: 'disabled
 		    'command: (lambda ()
 				(verifyproc))))
 
@@ -147,9 +150,13 @@
 	    (statusstate 1)
 	    (statusbox 'insert 'end "tf2c installation: found\n")
 	    (statusbox 'insert 'end (conc "version " ver " detected\n"))
+	    (button2 'configure 'state: 'normal)
+	    (button3 'configure 'state: 'normal)
 	    (statusstate 0)))
 	(begin	; else case
 	  (statusstate 1)
+	  (button2 'state 'disabled)
+	  (button3 'state 'disabled)
 	  (statusbox 'insert 'end "tf2c installation: not found\n")
 	  (statusstate 0))))))
 
