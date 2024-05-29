@@ -102,16 +102,14 @@
 			       (let ([cd (tk/choose-directory 'initialdir: defaultdir 'mustexist: 'true)])
 				 (begin
 				   (tk-set-var! 'userdir cd)
-				   (findlatestversion)
 				   (freespaceproc (tk-get-var 'userdir))
+				   (findlatestversion)
 				   (versiondetectproc))))))
 
 (define button1 (tk 'create-widget 'button
 		    'text: "New Install"
 		    'command: (lambda ()
-				(begin
-				  (findlatestversion)
-				  (installproc)))))
+				(installproc))))
 
 (define button2 (tk 'create-widget 'button
 		    'text: "Upgrade"
@@ -146,7 +144,6 @@
 
 ; we need some definitions down here to get around delayed-eval gremlins
 ; tk is a fuck with touching its precious variables, so we call tk-get-var
-
 (define *currentver*)
 
 (define findlatestversion
@@ -154,10 +151,9 @@
     (if (not (file-exists? (conc tempdir "/" revtxt)))
         (let-values ([(a b c) (process downloader (append ariaversionline (list (conc partialurl "/" revtxt))))])
           (begin
-            (display->status a)
+            (display->status a) ; we need to clear the port to close it but we dont want to display it
             (close-input-port a)
             (close-output-port b))))
-
     (let ([ver (string->number (read-line (open-input-file (conc tempdir "/" revtxt))))])
       (set! *currentver* ver))))
 
@@ -184,8 +180,6 @@
 	  (statusbox 'insert 'end "tf2c installation: not found\n")
 	  (statusstate 0))))))
 
-; our button click procedures etc below
-; mind the parentheses, this bit is a mess
 (define installproc
   (lambda ()
     (let-values ([(a b c) (process downloader (append arialine (list fulltarballurl)))])
