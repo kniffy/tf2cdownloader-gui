@@ -1,11 +1,13 @@
 (import (r7rs)
 	(chicken file)
+	(chicken file posix)
 	(chicken io)
 	(chicken port)
 	(chicken process)
 	(chicken process-context)
 	(chicken platform)
-	(chicken string))
+	(chicken string)
+	(chicken time))
 
 (import (pstk))
 
@@ -148,14 +150,24 @@
 
 (define findlatestversion
   (lambda ()
-    (if (not (file-exists? (conc tempdir "/" revtxt)))
-        (let-values ([(a b c) (process downloader (append ariaversionline (list (conc partialurl "/" revtxt))))])
-          (begin
-            (display->status a) ; we need to clear the port to close it but we dont want to display it
-            (close-input-port a)
-            (close-output-port b))))
-    (let ([ver (string->number (read-line (open-input-file (conc tempdir "/" revtxt))))])
-      (set! *currentver* ver))))
+    (let ([foo (conc tempdir "/" revtxt)])
+      (if (file-exists? foo)
+	(begin    ; true case
+	  (let* ([filetime (file-modification-time foo)] [differ (- (current-seconds) filetime)])
+	    (if (> differ 3600)
+	      (findlatestversion-get))))
+	(findlatestversion-get))  ; false case
+
+      (let ([ver (string->number (read-line (open-input-file (conc tempdir "/" revtxt))))])
+	(set! *currentver* ver)))))
+
+(define findlatestversion-get
+  (lambda ()
+    (let-values ([(a b c) (process downloader (append ariaversionline (list (conc partialurl "/" revtxt))))])
+      (begin
+	(display->status a) ; we need to clear the port to close it but we dont want to display it
+	(close-input-port a)
+	(close-output-port b)))))
 
 (define versiondetectproc
   (lambda ()
