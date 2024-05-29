@@ -11,6 +11,11 @@
 
 (import (pstk))
 
+; TODO windows testing!
+; in theory everything should work, but a few things
+; like the posix query for file modified time may be
+; weird on windows
+
 ; NOTE our variable definitions generally go up here,
 ; but for cursed reasons some of them are below, under
 ; the tk gui block, tk is a bitch with passing vars
