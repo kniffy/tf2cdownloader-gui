@@ -76,7 +76,18 @@
         "-d"
         tempdir))
 
-(define butlerline (list))
+(define butlerpatchline
+  (list "apply"
+	"--staging-dir=foo"
+        "/var/tmp/file.pwr"
+        "tf2c-dir"))
+
+(define butlerverifyline
+  (list "verify"
+        "(signature)"
+        "tf2c-dir"
+        "--heal=archive"
+        "(remote)"))
 
 (define partialurl "http://fastdl.tildas.org/pub/downloader")
 (define fulltarballurl (conc partialurl "/tf2classic-latest.meta4"))
