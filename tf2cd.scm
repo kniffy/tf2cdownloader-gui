@@ -210,7 +210,7 @@
 
 (define installproc
   (lambda ()
-    (let-values ([(a b c) (process downloader (append arialine (list fulltarballurl)))] [(rid) (tk-get-var 'userdir)])
+    (let*-values ([(rid) (tk-get-var 'userdir)] [(a b c) (process downloader (append arialine (list fulltarballurl)))])
       (begin
 	(buttonstate 0)
 	(statusstate 1)
