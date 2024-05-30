@@ -76,13 +76,12 @@
         "-d"
         tempdir))
 
+; we append to this later
 (define unpackline (list "-kxv" "-I" zstd "-f"))
 
 (define butlerpatchline
   (list "apply"
-	"--staging-dir=foo"
-        "/var/tmp/file.pwr"
-        "tf2c-dir"))
+	(conc "--staging-dir=" (conc tempdir "/staging"))))
 
 (define butlerverifyline
   (list "verify"
@@ -97,6 +96,7 @@
 
 ; we set this later in the version detection procedure
 (define patchfile)
+(define fullpatchfile)
 
 ; tk init
 ;(tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
@@ -228,10 +228,9 @@
 
 	; sanity checking if there are multiple tarballs in tmp dir
 	; we assume the latest version is the highest lexically, so
-	; we reverse and car that list
-	(if (list? (glob (conc tempdir "/tf2classic-?.?.?.tar.zst")))
-	  (set! unpackline (append unpackline (list (car (reverse (glob (conc tempdir "/tf2classic-?.?.?.tar.zst")))))))
-	  (set! unpackline (append unpackline (list (glob (conc tempdir "/tf2classic-?.?.?.tar.zst"))))))  ; else
+	; we car the reversed list. note how we need to stick the car
+	; into a new list
+	(set! unpackline (append unpackline (list (car (reverse (glob (conc tempdir "/tf2classic-?.?.?.tar.zst")))))))
 
 	(let-values ([(d e f g) (process* tar (append unpackline (list "-C" rid)))])
 	  (display->status d)
@@ -250,7 +249,8 @@
 (define upgradeproc
   (lambda ()
     (if (not (null? patchfile))
-      (let-values ([(a b c) (process downloader (append arialine (list (conc partialurl "/" patchfile))))])
+      (let*-values ([(rid) (tk-get-var 'userdir)]
+		    [(a b c) (process downloader (append arialine (list (conc partialurl "/" patchfile))))])
 	(begin
 	  (buttonstate 0)
 	  (statusstate 1)
@@ -258,9 +258,19 @@
 	  (display->status a)
 	  (close-input-port a)
 	  (close-output-port b)
-	  (statusbox 'insert 'end "patch downloaded?\n")
 
-	  (sleep 5)
+	  ; now we set up wot butler will do
+	  (create-directory (conc tempdir "/staging"))  ; does butler need this? we copy reference behavior
+
+	  (let*-values ([(tf2cdir) (conc rid "/tf2classic")]
+			[(patchpath) (conc tempdir "/" patchfile)]
+			[(x y z e) (process* butler (append butlerpatchline (list patchpath tf2cdir)))])
+	    (begin
+	      (display->status x)
+	      (display->status e)
+	      (close-input-port x)
+	      (close-output-port y)
+	      (close-input-port e)))
 
 	  (statusstate 0)
 	  (buttonstate 1)))
@@ -269,7 +279,10 @@
 
 (define verifyproc
   (lambda ()
-    (display "clicked verify")))
+    (begin
+      (statusstate 1)
+      (statusbox 'insert 'end "verify functions not implemented yet\n")
+      (statusstate 0))))
 
 (define freespaceproc
   (lambda (dir)
