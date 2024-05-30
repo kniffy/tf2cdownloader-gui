@@ -38,7 +38,7 @@
     (define butler "bin/butler")
     (define defaultdir
       (let ([user (get-environment-variable "USER")])
-	      (conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))
+	(conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))
     (define lct "bin/tclkit")
     (define df "bin/df")
     (define tar "bin/tar")
@@ -75,6 +75,8 @@
         "--allow-overwrite=true"
         "-d"
         tempdir))
+
+(define unpackline (list "-kxv" "-I" zstd "-f"))
 
 (define butlerpatchline
   (list "apply"
@@ -172,7 +174,7 @@
 	  (let* ([filetime (file-modification-time foo)] [differ (- (current-seconds) filetime)])
 	    (if (> differ 3600)
 	      (findlatestversion-get))))
-	(findlatestversion-get))  ; false case
+	(findlatestversion-get))  ; false case of outer if
 
       (let ([ver (string->number (read-line (open-input-file (conc tempdir "/" revtxt))))])
 	(set! *currentver* ver)))))
@@ -224,7 +226,14 @@
 	; fuck it we ball (unpack)
 	(statusbox 'insert 'end "Unpacking.. \n")
 
-	(let-values ([(d e f g) (process* (conc tar " -kxv -I " zstd " -f " tempdir "/tf2classic-?.?.?.tar.zst -C " rid))])
+	; sanity checking if there are multiple tarballs in tmp dir
+	; we assume the latest version is the highest lexically, so
+	; we reverse and car that list
+	(if (list? (glob (conc tempdir "/tf2classic-?.?.?.tar.zst")))
+	  (set! unpackline (append unpackline (list (car (reverse (glob (conc tempdir "/tf2classic-?.?.?.tar.zst")))))))
+	  (set! unpackline (append unpackline (list (glob (conc tempdir "/tf2classic-?.?.?.tar.zst"))))))  ; else
+
+	(let-values ([(d e f g) (process* tar (append unpackline (list "-C" rid)))])
 	  (display->status d)
 	  (statusbox 'insert 'end "\n")
 	  (sleep 2)
