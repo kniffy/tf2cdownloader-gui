@@ -210,7 +210,7 @@
 
 (define installproc
   (lambda ()
-    (let-values ([(a b c) (process downloader (append arialine (list fulltarballurl)))])
+    (let-values ([(a b c) (process downloader (append arialine (list fulltarballurl)))] [(rid) (tk-get-var 'userdir)])
       (begin
 	(buttonstate 0)
 	(statusstate 1)
@@ -224,9 +224,9 @@
 	; fuck it we ball (unpack)
 	(statusbox 'insert 'end "Unpacking.. \n")
 
-	(let-values ([(d e f g) (process* (conc tar " -kxv -I " zstd " -f " tempdir "/tf2classic-?.?.?.tar.zst -C " (tk-get-var 'userdir)))])
+	(let-values ([(d e f g) (process* (conc tar " -kxv -I " zstd " -f " tempdir "/tf2classic-?.?.?.tar.zst -C " rid))])
 	  (display->status d)
-	  ;(statusbox 'insert 'end "\n checking for error output..\n")
+	  (statusbox 'insert 'end "\n")
 	  (sleep 2)
 	  (display->status g)
 	  (close-input-port d)
@@ -240,20 +240,23 @@
 
 (define upgradeproc
   (lambda ()
-    (let-values ([(a b c) (process downloader (append arialine (list (conc partialurl "/" patchfile))))])
-      (begin
-	(buttonstate 0)
-	(statusstate 1)
-	(statusstate 2)
-        (display->status a)
-        (close-input-port a)
-        (close-output-port b)
-        (statusbox 'insert 'end "patch downloaded?\n")
+    (if (not (null? patchfile))
+      (let-values ([(a b c) (process downloader (append arialine (list (conc partialurl "/" patchfile))))])
+	(begin
+	  (buttonstate 0)
+	  (statusstate 1)
+	  (statusstate 2)
+	  (display->status a)
+	  (close-input-port a)
+	  (close-output-port b)
+	  (statusbox 'insert 'end "patch downloaded?\n")
 
-        (sleep 5)
+	  (sleep 5)
 
-        (statusstate 0)
-        (buttonstate 1)))))
+	  (statusstate 0)
+	  (buttonstate 1)))
+
+      (display "patchfile was null?"))))
 
 (define verifyproc
   (lambda ()
