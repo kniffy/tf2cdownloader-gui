@@ -76,7 +76,7 @@
         "-d"
         tempdir))
 
-; we append to this later
+; we append multiple args to some of these later
 (define unpackline (list "-kxv" "-I" zstd "-f"))
 
 (define butlerpatchline
@@ -128,20 +128,17 @@
 
 (define button1 (tk 'create-widget 'button
 		    'text: "New Install"
-		    'command: (lambda ()
-				(installproc))))
+		    'command: (lambda () (installproc))))
 
 (define button2 (tk 'create-widget 'button
 		    'text: "Upgrade"
 		    'state: 'disabled
-		    'command: (lambda ()
-				(upgradeproc))))
+		    'command: (lambda () (upgradeproc))))
 
 (define button3 (tk 'create-widget 'button
 		    'text: "Verify"
 		    'state: 'disabled
-		    'command: (lambda ()
-				(verifyproc))))
+		    'command: (lambda () (verifyproc))))
 
 (define statusbox (tk 'create-widget 'text
 		      'height: 12
@@ -160,11 +157,12 @@
 (tk/grid button3 'row: 4 'column: 2)			; verify
 (tk/grid statusbox 'row: 6 'column: 0 'columnspan: 4)
 
-(entry 'insert 0 defaultdir)		; we cant put this in the initialization
+(entry 'insert 0 "pick a dir :^)")		; we cant put this in the initialization
 
 ; we need some definitions down here to get around delayed-eval gremlins
 ; tk is a fuck with touching its precious variables, so we call tk-get-var
 (define *currentver*)
+(define *latestver*)
 
 (define findlatestversion
   (lambda ()
@@ -177,7 +175,7 @@
 	(findlatestversion-get))  ; false case of outer if
 
       (let ([ver (string->number (read-line (open-input-file (conc tempdir "/" revtxt))))])
-	(set! *currentver* ver)))))
+	(set! *latestver* ver)))))
 
 (define findlatestversion-get
   (lambda ()
@@ -192,9 +190,10 @@
     (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"] [full ""])
       (if (file-exists? (conc dir file))
 	(let ([ver (string->number (read-line (open-input-file (conc dir file))))])
+	  (set! *currentver* ver)
 	  (if (not (= ver *currentver*))
 	    (begin
-	      (set! full (conc "tf2classic-patch" "-" ver "-" *currentver* ".pwr"))
+	      (set! full (conc "tf2classic-patch" "-" ver "-" *latestver* ".pwr"))
 	      (set! patchfile full)))
 	  (begin
 	    (statusstate 1)
@@ -248,34 +247,42 @@
 
 (define upgradeproc
   (lambda ()
-    (if (not (null? patchfile))
-      (let*-values ([(rid) (tk-get-var 'userdir)]
-		    [(a b c) (process downloader (append arialine (list (conc partialurl "/" patchfile))))])
-	(begin
-	  (buttonstate 0)
-	  (statusstate 1)
-	  (statusstate 2)
-	  (display->status a)
-	  (close-input-port a)
-	  (close-output-port b)
+    (if (not (= *currentver* *latestver*))
+      (if (not (null? patchfile))
+	(let*-values ([(rid) (tk-get-var 'userdir)]
+		      [(a b c) (process downloader (append arialine (list (conc partialurl "/" patchfile))))])
+	  (begin
+	    (buttonstate 0)
+	    (statusstate 1)
+	    (statusstate 2)
+	    (display->status a)
+	    (close-input-port a)
+	    (close-output-port b)
 
-	  ; now we set up wot butler will do
-	  (create-directory (conc tempdir "/staging"))  ; does butler need this? we copy reference behavior
+	    (sleep 5)
 
-	  (let*-values ([(tf2cdir) (conc rid "/tf2classic")]
-			[(patchpath) (conc tempdir "/" patchfile)]
-			[(x y z e) (process* butler (append butlerpatchline (list patchpath tf2cdir)))])
-	    (begin
-	      (display->status x)
-	      (display->status e)
-	      (close-input-port x)
-	      (close-output-port y)
-	      (close-input-port e)))
+	    ; now we set up wot butler will do
+	    (create-directory (conc tempdir "/staging"))  ; does butler need this? we copy reference behavior
 
-	  (statusstate 0)
-	  (buttonstate 1)))
+	    (let*-values ([(tf2cdir) (conc rid "/tf2classic")]
+			  [(patchpath) (conc tempdir "/" patchfile)]
+			  [(x y z e) (process* butler (append butlerpatchline (list patchpath tf2cdir)))])
+	      (begin
+		(display->status x)
+		(display->status e)
+		(close-input-port x)
+		(close-output-port y)
+		(close-input-port e)))
 
-      (display "patchfile was null?"))))
+	    (statusstate 0)
+	    (buttonstate 1)))
+
+	(display "patchfile was null?"))
+
+      (begin	; outermost if, when at latest version
+	(statusstate 1)
+	(statusbox 'insert 'end "tf2c at latest version!\n")
+	(statusstate 0)))))
 
 (define verifyproc
   (lambda ()
