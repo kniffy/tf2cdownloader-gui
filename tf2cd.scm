@@ -95,8 +95,8 @@
 (define revtxt "current")
 
 ; we set this later in the version detection procedure
-(define patchfile)
-(define fullpatchfile)
+(define patchfile 0)
+(define fullpatchfile 0)
 
 ; tk init
 ;(tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
@@ -248,7 +248,7 @@
 (define upgradeproc
   (lambda ()
     (if (not (= *currentver* *latestver*))
-      (if (not (null? patchfile))
+      (if (not (zero? patchfile))
 	(let*-values ([(rid) (tk-get-var 'userdir)]
 		      [(a b c) (process downloader (append arialine (list (conc partialurl "/" patchfile))))])
 	  (begin
