@@ -53,7 +53,7 @@
   (list
     "--enable-color=false"
     "-x 16"
-    "-UTF2CDownloadergui2024-05-30"
+    "-UTF2CDownloadergui2024-06-01"
     "--allow-piece-length-change=true"
     "-j 16"
     "--optimize-concurrent-downloads=true"
@@ -71,7 +71,7 @@
 
 (define ariaversionline
   (list "--enable-color=false"
-        "-UTF2CDownloadergui2024-05-30"
+        "-UTF2CDownloadergui2024-06-01"
         "--allow-overwrite=true"
         "-d"
         tempdir))
@@ -83,6 +83,7 @@
   (list "apply"
 	(conc "--staging-dir=" (conc tempdir "/staging"))))
 
+; mayb stick this in a let below
 (define butlerverifyline
   (list "verify"
         "(signature)"
@@ -194,7 +195,9 @@
 	  (if (not (= ver *currentver*))
 	    (begin
 	      (set! full (conc "tf2classic-patch" "-" ver "-" *latestver* ".pwr"))
-	      (set! patchfile full)))
+	      (set! patchfile full))
+	    ; TODO fallback else case if we cant figure this out
+	    )
 	  (begin
 	    (statusstate 1)
 	    (statusbox 'insert 'end "tf2c installation: found\n")
@@ -208,6 +211,13 @@
 	  (button3 'state 'disabled)
 	  (statusbox 'insert 'end "tf2c installation: not found\n")
 	  (statusstate 0))))))
+
+;(define versiondetectfallbackproc
+;  (lambda ()
+;    (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/version.txt"] [full ""])
+;      (if (file-exists? (conc dir file))
+;          ; TODO load version.txt, split out the keys and values, cdr the versionname
+;          ))))
 
 (define installproc
   (lambda ()
@@ -245,6 +255,8 @@
 	(statusstate 0)
 	(buttonstate 1)))))
 
+; TODO we need to do a verify pass to ensure upgrading can succeed,
+; there are cases where butler can fail
 (define upgradeproc
   (lambda ()
     (if (not (= *currentver* *latestver*))
