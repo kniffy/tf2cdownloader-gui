@@ -149,16 +149,6 @@
 		      'wrap: 'word
 		      'state: 'disabled))
 
-(define versionmenu (tk 'create-widget "tk_optionMenu"
-                        (tk-var 'selectedversion)
-                        "2.0.3"
-                        "2.0.4"
-                        "2.1.0"
-                        "2.1.1"
-                        "2.1.2"
-                        "2.1.3"
-                        "2.1.4"))
-
 ; actually drawing the window and placing positions
 ; for readability, keep the same order as definitions
 (tk/grid label0 'row: 0 'column: 0 'pady: 10)
@@ -168,10 +158,8 @@
 (tk/grid button2 'row: 4 'column: 1)			; upgrade
 (tk/grid button3 'row: 4 'column: 2)			; verify
 (tk/grid statusbox 'row: 6 'column: 0 'columnspan: 4)
-(tk/grid versionmenu 'row: 4 'column: 3)
 
 (entry 'insert 0 "pick a dir :^)")		; we cant put this in the initialization
-;(tk-set-var! 'selectedversion "manual")
 
 ; we need some definitions down here to get around delayed-eval gremlins
 ; tk is a fuck with touching its precious variables, so we call tk-get-var
@@ -203,13 +191,7 @@
 ; erroneous rev.txt entries
 (define versiondetectproc
   (lambda ()
-    (let ([dir (tk-get-var 'userdir)]
-	  [file "/tf2classic/rev.txt"] [full ""]
-	  [manualpick (lambda ()
-			(begin
-			  (statusbox 'insert 'end "manually pick a version to continue\n")
-			  (tk-set-var! 'selectedversion "pick me")))])
-
+    (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"] [full ""])
       (if (file-exists? (conc dir file))
 	(let ([ver (string->number (read-line (open-input-file (conc dir file))))])
 	  (set! *currentver* ver)
@@ -221,11 +203,10 @@
 	    (statusstate 1)
 	    (statusbox 'insert 'end "tf2c installation: found\n")
 	    (statusbox 'insert 'end (conc "version " ver " detected\n"))
-      (cond
-       [(< ver 203) (begin (statusbox 'insert 'end "version number too low?\n")
-                           (manualpick))]
-       [(> ver 230) (begin (statusbox 'insert 'end "version number too high?\n")
-                           (manualpick))])
+
+	    (cond
+	      [(< ver 203) (statusbox 'insert 'end "version number too low?\n")]
+	      [(> ver 230) (statusbox 'insert 'end "version number too high?\n")])
 
 	    (button2 'configure 'state: 'normal)
 	    (button3 'configure 'state: 'normal)
@@ -238,7 +219,6 @@
 	  (statusstate 0))))))
 
 ;(define signatureproc
-
 
 (define installproc
   (lambda ()
@@ -310,7 +290,10 @@
 	    (statusstate 0)
 	    (buttonstate 1)))
 
-	(display "patchfile was null?"))
+	(begin
+	  (statusstate 1)
+	  (statusbox 'insert 'end "patchfile is null?\n")
+	  (statusstate 0)))
 
       (begin	; outermost if, when at latest version
 	(statusstate 1)
