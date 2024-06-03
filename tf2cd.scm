@@ -204,9 +204,9 @@
 	    (statusbox 'insert 'end "tf2c installation: found\n")
 	    (statusbox 'insert 'end (conc "version " ver " detected\n"))
 
-	    (cond
-	      [(< ver 203) (statusbox 'insert 'end "version number too low?\n")]
-	      [(> ver 230) (statusbox 'insert 'end "version number too high?\n")])
+	    (if [or (< ver 203) (> ver 230)]
+	      (begin  ; true case
+		(statusbox 'insert 'end "malformed version number?\n")))
 
 	    (button2 'configure 'state: 'normal)
 	    (button3 'configure 'state: 'normal)
