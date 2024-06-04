@@ -6,20 +6,20 @@ on:
        - master
 
 jobs:
-  Windows-Chicken:
-    runs-on: windows-latest
+  #    Windows-Chicken:
+  #    runs-on: windows-latest
 
-    steps:
-    - name: Checkout
-      uses: actions/checkout@master
+  #    steps:
+  #    - name: Checkout
+  #      uses: actions/checkout@master
 
-    - name: use Setup-Scheme
-      uses: guenchi/setup-scheme@master
-      with:
-        implementation: chicken
+  #    - name: use Setup-Scheme
+  #      uses: guenchi/setup-scheme@master
+  #      with:
+  #     implementation: chicken
 
-    - run: chicken-install -s pstk r7rs
-    - run: csc -vvv -gui -static -o tf2cd.exe tf2cd.scm
+  # - run: chicken-install -s pstk r7rs
+  # - run: csc -vvv -gui -static -o tf2cd.exe tf2cd.scm
 
   Linux-Chicken:
     runs-on: ubuntu-latest
