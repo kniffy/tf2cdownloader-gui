@@ -1,0 +1,39 @@
+name: Master
+
+on: 
+   push:
+     branches : 
+       - master
+   pull_request:
+     branches : 
+       - master
+
+jobs:
+  Windows-Chicken:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+
+    - name: use Setup-Scheme
+      uses: guenchi/setup-scheme@master
+      with:
+        implementation: chicken
+
+    - run: chicken --version
+
+  Linux-Chicken:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+
+    - name: use Setup-Scheme
+      uses: guenchi/setup-scheme@master
+      with:
+        implementation: chicken
+
+    - run: csi
+
