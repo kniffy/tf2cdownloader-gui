@@ -83,21 +83,19 @@
   (list "apply"
 	(conc "--staging-dir=" (conc tempdir "/staging"))))
 
-; mayb stick this in a let below
-(define butlerverifyline
-  (list "verify"
-        "(signature)"
-        "tf2c-dir"
-        "--heal=archive"
-        "(remote)"))
+; this is evaluated out below in the verify procedure
+;(define butlerverifyline)
 
 (define partialurl "http://fastdl.tildas.org/pub/downloader")
 (define fulltarballurl (conc partialurl "/tf2classic-latest.meta4"))
 (define revtxt "current")
 
+(define *masterurl* "https://wiki.tf2classic.com/kachemak/")
+
 ; we set this later in the version detection procedure
 (define patchfile 0)
 (define fullpatchfile 0)
+(define *healfile* 0)
 
 ; tk init
 ;(tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
@@ -193,25 +191,28 @@
   (lambda ()
     (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"] [full ""])
       (if (file-exists? (conc dir file))
-	(let ([ver (string->number (read-line (open-input-file (conc dir file))))])
-	  (set! *currentver* ver)
-	  (if (not (= ver *currentver*))
-	    (begin
-	      (set! full (conc "tf2classic-patch" "-" ver "-" *latestver* ".pwr"))
-	      (set! patchfile full)))
-	  (begin
-	    (statusstate 1)
-	    (statusbox 'insert 'end "tf2c installation: found\n")
-	    (statusbox 'insert 'end (conc "version " ver " detected\n"))
+	        (let* ([ver (string->number (read-line (open-input-file (conc dir file))))]
+                 [dotver (string-intersperse (string-chop (number->string ver) 1) ".")])
+	          (set! *currentver* ver)
+	          (unless (= ver *latestver*)
+	            (set! patchfile (conc "tf2classic-patch" "-" ver "-" *latestver* ".pwr"))
+              (set! *healfile* (conc "tf2classic-" dotver "-heal.zip"))
+	            (set! full patchfile))
 
-	    (if [or (< ver 203) (> ver 230)]
-	      (begin  ; true case
-		(statusbox 'insert 'end "malformed version number?\n")))
+	          (begin
+	            (statusstate 1)
+	            (statusbox 'insert 'end "tf2c installation: found\n")
+	            (statusbox 'insert 'end (conc "version " ver " detected\n"))
 
-	    (button2 'configure 'state: 'normal)
-	    (button3 'configure 'state: 'normal)
-	    (statusstate 0)))
-	(begin	; else case
+	            (if [or (< ver 203) (> ver 230)]
+	                (begin  ; true case
+		                (statusbox 'insert 'end "malformed version number?\n")))
+
+	            (button2 'configure 'state: 'normal)
+	            (button3 'configure 'state: 'normal)
+	            (statusstate 0)))
+
+	        (begin	; else case
 	  (statusstate 1)
 	  (button2 'state 'disabled)
 	  (button3 'state 'disabled)
@@ -300,12 +301,35 @@
 	(statusbox 'insert 'end "tf2c at latest version!\n")
 	(statusstate 0)))))
 
+; butler verify cli is fairly simple,
+; we simply pass in URLs to the master
+; sig+heal files
+; eg bin/butler verify https://wiki.tf2classic.com/kachemak/tf2classic214.sig /var/tmp/Q/tf2classic
+; --heal=archive,https://wiki.tf2classic.com/kachemak/tf2classic-2.1.4-heal.zip
 (define verifyproc
   (lambda ()
-    (begin
-      (statusstate 1)
-      (statusbox 'insert 'end "verify functions not implemented yet\n")
-      (statusstate 0))))
+    (let*-values ([(rid) (tk-get-var 'userdir)]
+                  [(butlerverifyline) (list "verify"
+                                          (conc *masterurl* "tf2classic" *currentver* ".sig")
+                                          (conc rid "/tf2classic")
+                                          (conc "--heal=archive," *masterurl* *healfile*))])
+
+      (let-values ([(a b c d) (process* butler butlerverifyline)])
+        (begin
+          (statusstate 1)
+          (display->status a)
+          (close-input-port a)
+          (close-output-port b)
+          (display->status d)
+          (close-input-port d)
+
+          (statusbox 'insert 'end "verified?")
+          (statusstate 0))))))
+
+;    (begin
+;      (statusstate 1)
+;      (statusbox 'insert 'end "verify functions not implemented yet\n")
+;      (statusstate 0))))
 
 (define freespaceproc
   (lambda (dir)
