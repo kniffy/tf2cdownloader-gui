@@ -36,3 +36,7 @@ jobs:
     - run: chicken-install -s pstk r7rs
     - run: csc -vvv -gui -static -o tf2cd tf2cd.scm
 
+    - name: "production artifacts"
+      uses: actions/upload-artifact@v4
+      with:
+        name: tf2cd
