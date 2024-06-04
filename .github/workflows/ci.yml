@@ -21,7 +21,7 @@ jobs:
       with:
         implementation: chicken
 
-    - run: chicken-install -s pstk
+    - run: chicken-install -s pstk r7rs
     - run: csc -gui -static tf2cd.scm
 
   Linux-Chicken:
@@ -36,6 +36,6 @@ jobs:
       with:
         implementation: chicken
 
-    - run: chicken-install -s pstk
+    - run: chicken-install -s pstk r7rs
     - run: csc -gui -static tf2cd.scm
 
