@@ -191,35 +191,35 @@
   (lambda ()
     (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"] [full ""])
       (if (file-exists? (conc dir file))
-	        (let* ([ver (string->number (read-line (open-input-file (conc dir file))))]
-                 [dotver (string-intersperse (string-chop (number->string ver) 1) ".")])
-	          (set! *currentver* ver)
-	          (unless (= ver *latestver*)
-	            (set! patchfile (conc "tf2classic-patch" "-" ver "-" *latestver* ".pwr"))
-              (set! *healfile* (conc "tf2classic-" dotver "-heal.zip"))
-	            (set! full patchfile))
+	(let* ([ver (string->number (read-line (open-input-file (conc dir file))))]
+	       [dotver (string-intersperse (string-chop (number->string ver) 1) ".")])
 
-	          (begin
-	            (statusstate 1)
-	            (statusbox 'insert 'end "tf2c installation: found\n")
-	            (statusbox 'insert 'end (conc "version " ver " detected\n"))
+	  (set! *currentver* ver)
+	  (set! *healfile* (conc "tf2classic-" dotver "-heal.zip"))
 
-	            (if [or (< ver 203) (> ver 230)]
-	                (begin  ; true case
-		                (statusbox 'insert 'end "malformed version number?\n")))
+	  (unless (= ver *latestver*)
+	    (set! patchfile (conc "tf2classic-patch" "-" ver "-" *latestver* ".pwr"))
+	    (set! full patchfile))
 
-	            (button2 'configure 'state: 'normal)
-	            (button3 'configure 'state: 'normal)
-	            (statusstate 0)))
+	  (begin
+	    (statusstate 1)
+	    (statusbox 'insert 'end "tf2c installation: found\n")
+	    (statusbox 'insert 'end (conc "version " ver " detected\n"))
 
-	        (begin	; else case
+	    (if [or (< ver 203) (> ver 230)]
+	      (begin  ; true case
+		(statusbox 'insert 'end "malformed version number?\n")))
+
+	    (button2 'configure 'state: 'normal)
+	    (button3 'configure 'state: 'normal)
+	    (statusstate 0)))
+
+	(begin	; else case
 	  (statusstate 1)
 	  (button2 'state 'disabled)
 	  (button3 'state 'disabled)
 	  (statusbox 'insert 'end "tf2c installation: not found\n")
 	  (statusstate 0))))))
-
-;(define signatureproc
 
 (define installproc
   (lambda ()
@@ -254,8 +254,7 @@
 	  (statusbox 'insert 'end "\n Unpacked!\n")
 	  (statusbox 'see 'end))
 
-	(statusstate 0)
-	(buttonstate 1)))))
+	(statusstate 0)))))
 
 ; TODO we need to do a verify pass to ensure upgrading can succeed,
 ; there are cases where butler can fail
@@ -309,27 +308,22 @@
 (define verifyproc
   (lambda ()
     (let*-values ([(rid) (tk-get-var 'userdir)]
-                  [(butlerverifyline) (list "verify"
-                                          (conc *masterurl* "tf2classic" *currentver* ".sig")
-                                          (conc rid "/tf2classic")
-                                          (conc "--heal=archive," *masterurl* *healfile*))])
+		  [(butlerverifyline) (list "verify"
+					    (conc *masterurl* "tf2classic" *currentver* ".sig")
+					    (conc rid "/tf2classic")
+					    (conc "--heal=archive," *masterurl* *healfile*))])
 
       (let-values ([(a b c d) (process* butler butlerverifyline)])
-        (begin
-          (statusstate 1)
-          (display->status a)
-          (close-input-port a)
-          (close-output-port b)
-          (display->status d)
-          (close-input-port d)
+	(begin
+	  (statusstate 1)
+	  (display->status a)
+	  (close-input-port a)
+	  (close-output-port b)
+	  (display->status d)
+	  (close-input-port d)
 
-          (statusbox 'insert 'end "verified?")
-          (statusstate 0))))))
-
-;    (begin
-;      (statusstate 1)
-;      (statusbox 'insert 'end "verify functions not implemented yet\n")
-;      (statusstate 0))))
+	  (statusbox 'insert 'end "verified?")
+	  (statusstate 0))))))
 
 (define freespaceproc
   (lambda (dir)
