@@ -261,7 +261,7 @@
 (define upgradeproc
   (lambda ()
     (if (not (= *currentver* *latestver*))
-      (if (not (zero? patchfile))
+      (if (string? patchfile)
 	(let*-values ([(rid) (tk-get-var 'userdir)]
 		      [(a b c) (process downloader (append arialine (list (conc partialurl "/" patchfile))))])
 	  (begin
@@ -272,7 +272,9 @@
 	    (close-input-port a)
 	    (close-output-port b)
 
+	    (statusbox 'insert 'end "verifying before patching..\n")
 	    (sleep 5)
+	    (verifyproc)
 
 	    ; now we set up wot butler will do
 	    (create-directory (conc tempdir "/staging"))  ; does butler need this? we copy reference behavior
@@ -281,11 +283,13 @@
 			  [(patchpath) (conc tempdir "/" patchfile)]
 			  [(x y z e) (process* butler (append butlerpatchline (list patchpath tf2cdir)))])
 	      (begin
+		(statusbox 'insert 'end "applying patch..\n")
 		(display->status x)
 		(display->status e)
 		(close-input-port x)
 		(close-output-port y)
-		(close-input-port e)))
+		(close-input-port e)
+		(statusbox 'insert 'end "patched?\n")))
 
 	    (statusstate 0)
 	    (buttonstate 1)))
@@ -315,6 +319,7 @@
 
       (let-values ([(a b c d) (process* butler butlerverifyline)])
 	(begin
+	  (buttonstate 0)
 	  (statusstate 1)
 	  (display->status a)
 	  (close-input-port a)
@@ -322,8 +327,9 @@
 	  (display->status d)
 	  (close-input-port d)
 
-	  (statusbox 'insert 'end "verified?")
-	  (statusstate 0))))))
+	  (statusbox 'insert 'end "verified?\n")
+	  (statusstate 0)
+	  (buttonstate 1))))))
 
 (define freespaceproc
   (lambda (dir)
