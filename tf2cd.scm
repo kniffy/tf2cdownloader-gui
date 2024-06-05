@@ -53,7 +53,7 @@
   (list
     "--enable-color=false"
     "-x 16"
-    "-UTF2CDownloadergui2024-06-01"
+    "-UTF2CDownloadergui2024-06-04"
     "--allow-piece-length-change=true"
     "-j 16"
     "--optimize-concurrent-downloads=true"
@@ -71,7 +71,7 @@
 
 (define ariaversionline
   (list "--enable-color=false"
-        "-UTF2CDownloadergui2024-06-01"
+        "-UTF2CDownloadergui2024-06-04"
         "--allow-overwrite=true"
         "-d"
         tempdir))
