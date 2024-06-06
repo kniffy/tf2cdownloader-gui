@@ -10,7 +10,7 @@ jobs:
   Windows-Chicken:
     runs-on: windows-2019
 
-      steps:
+    steps:
       - name: Checkout
         uses: actions/checkout@master
 
