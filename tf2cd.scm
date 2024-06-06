@@ -40,7 +40,7 @@
       (let ([user (get-environment-variable "USER")])
 	(conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))
     (define lct "bin/tclkit")
-    (define df "bin/df")
+    (define df "df")
     (define tar "bin/tar")
     (define zstd "bin/zstd")))
 
