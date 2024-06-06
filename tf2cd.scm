@@ -263,7 +263,7 @@
     (if (not (= *currentver* *latestver*))
       (if (string? patchfile)
 	(let*-values ([(rid) (tk-get-var 'userdir)]
-		      [(a b c) (process downloader (append arialine (list (conc partialurl "/" patchfile))))])
+		      [(a b c) (process downloader (append arialine (list (conc *masterurl* patchfile))))])
 	  (begin
 	    (buttonstate 0)
 	    (statusstate 1)
