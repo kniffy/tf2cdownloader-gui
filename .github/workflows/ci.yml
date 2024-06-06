@@ -6,23 +6,24 @@ on:
        - master
 
 jobs:
-  #    Windows-Chicken:
-  #    runs-on: windows-latest
 
-  #    steps:
-  #    - name: Checkout
-  #      uses: actions/checkout@master
+  Windows-Chicken:
+    runs-on: windows-2019
 
-  #    - name: use Setup-Scheme
-  #      uses: guenchi/setup-scheme@master
-  #      with:
-  #     implementation: chicken
+      steps:
+      - name: Checkout
+        uses: actions/checkout@master
 
-  # - run: chicken-install -s pstk r7rs
-  # - run: csc -vvv -gui -static -o tf2cd.exe tf2cd.scm
+      - name: use Setup-Scheme
+        uses: guenchi/setup-scheme@master
+        with:
+          implementation: chicken
+
+   - run: chicken-install -s pstk r7rs
+   - run: csc -vvv -gui -static -o tf2cd.exe tf2cd.scm
 
   Linux-Chicken:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     
     steps:
     - name: Checkout
@@ -35,10 +36,11 @@ jobs:
 
     - run: chicken-install -s pstk r7rs
     - run: mkdir z
-    - run: csc -vvv -gui -static -o z/tf2cd tf2cd.scm
+    - run: csc -vvv -gui -static -O3 -o z/tf2cd tf2cd.scm
 
     - name: "production artifacts"
       uses: actions/upload-artifact@v4
       with:
         name: tf2cd
         path: /home/runner/work/tf2cdownloader-gui/tf2cdownloader-gui/z
+
