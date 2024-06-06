@@ -87,7 +87,7 @@
 ;(define butlerverifyline)
 
 (define partialurl "http://fastdl.tildas.org/pub/downloader")
-(define fulltarballurl (conc partialurl "/tf2classic-latest.meta4"))
+(define fulltarballurl 0)
 (define revtxt "current")
 
 (define *masterurl* "https://wiki.tf2classic.com/kachemak/")
@@ -189,7 +189,10 @@
 ; erroneous rev.txt entries
 (define versiondetectproc
   (lambda ()
-    (let ([dir (tk-get-var 'userdir)] [file "/tf2classic/rev.txt"] [full ""])
+    (let ([dir (tk-get-var 'userdir)]
+	  [file "/tf2classic/rev.txt"] [full ""]
+	  [dotlatestver (string-intersperse (string-chop (number->string *latestver*) 1) ".")])
+
       (if (file-exists? (conc dir file))
 	(let* ([ver (string->number (read-line (open-input-file (conc dir file))))]
 	       [dotver (string-intersperse (string-chop (number->string ver) 1) ".")])
@@ -199,6 +202,7 @@
 
 	  (unless (= ver *latestver*)
 	    (set! patchfile (conc "tf2classic-patch" "-" ver "-" *latestver* ".pwr"))
+	    (set! fulltarballurl (conc *masterurl* "tf2classic-" dotlatestver ".meta4"))  ; metalink, not the literal tarball
 	    (set! full patchfile))
 
 	  (begin
@@ -218,6 +222,7 @@
 	  (statusstate 1)
 	  (button2 'state 'disabled)
 	  (button3 'state 'disabled)
+	  (set! fulltarballurl (conc *masterurl* "tf2classic-" dotlatestver ".meta4"))
 	  (statusbox 'insert 'end "tf2c installation: not found\n")
 	  (statusstate 0))))))
 
