@@ -6,7 +6,6 @@ on:
        - master
 
 jobs:
-
   Windows-Chicken:
     runs-on: windows-2019
 
@@ -19,8 +18,8 @@ jobs:
         with:
           implementation: chicken
 
-   - run: chicken-install -s pstk r7rs
-   - run: csc -vvv -gui -static -o tf2cd.exe tf2cd.scm
+      - run: chicken-install -s pstk r7rs
+      - run: csc -vvv -gui -static -o tf2cd.exe tf2cd.scm
 
   Linux-Chicken:
     runs-on: ubuntu-22.04
