@@ -103,7 +103,8 @@
 (ttk-map-widgets 'all) ; use the ttk widget set
 (ttk/set-theme "clam")
 (tk/wm 'title tk "tf2cdownloader")
-(tk 'configure 'height: 600 'width: 800)
+;(tk/wm 'minsize tk 800 600)
+(tk/wm 'resizable tk 0 0)
 
 ; we must initialize tk vars like so
 (tk-var 'userdir)
