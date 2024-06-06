@@ -1,0 +1,30 @@
+name: Master
+
+on: 
+   push:
+     branches : 
+       - master
+
+jobs:
+  Linux-Chicken:
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+
+    - name: use Setup-Scheme
+      uses: guenchi/setup-scheme@master
+      with:
+        implementation: chicken
+
+    - run: chicken-install -s pstk r7rs
+    - run: mkdir z
+    - run: csc -vvv -gui -static -O3 -o z/tf2cd tf2cd.scm
+
+    - name: "production artifacts"
+      uses: actions/upload-artifact@v4
+      with:
+        name: tf2cd-linux
+        path: /home/runner/work/tf2cdownloader-gui/tf2cdownloader-gui/z
+
