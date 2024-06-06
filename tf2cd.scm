@@ -275,6 +275,8 @@
 	    (statusbox 'insert 'end "verifying before patching..\n")
 	    (sleep 5)
 	    (verifyproc)
+	    (buttonstate 0) ; verify proc sets these off, we still need it here
+	    (statusstate 1)
 
 	    ; now we set up wot butler will do
 	    (create-directory (conc tempdir "/staging"))  ; does butler need this? we copy reference behavior
