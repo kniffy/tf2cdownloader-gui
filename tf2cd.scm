@@ -49,7 +49,7 @@
 ; a whole shell for the subprocess; we dont want to touch shell quotations
 (define freespaceline (list "--output=avail" tempdir)) ; todo check windows output
 
-(define arialine
+(define *arialine*
   (list
     "--enable-color=false"
     "-x 16"
@@ -69,7 +69,7 @@
     "-d"
     tempdir))
 
-(define ariaversionline
+(define *ariaversionline*
   (list "--enable-color=false"
         "-UTF2CDownloadergui2024-06-04"
         "--allow-overwrite=true"
@@ -77,24 +77,24 @@
         tempdir))
 
 ; we append multiple args to some of these later
-(define unpackline (list "-kxv" "-I" zstd "-f"))
+(define *unpackline* (list "-kxv" "-I" zstd "-f"))
 
-(define butlerpatchline
+(define *butlerpatchline*
   (list "apply"
 	(conc "--staging-dir=" (conc tempdir "/staging"))))
 
 ; this is evaluated out below in the verify procedure
 ;(define butlerverifyline)
 
-(define partialurl "http://fastdl.tildas.org/pub/downloader")
-(define fulltarballurl 0)
-(define revtxt "current")
+(define *partialurl* "http://fastdl.tildas.org/pub/downloader")
+(define *fulltarballurl* 0)
+(define *revtxt* "current")
 
 (define *masterurl* "https://wiki.tf2classic.com/kachemak/")
 
 ; we set this later in the version detection procedure
-(define patchfile 0)
-(define fullpatchfile 0)
+(define *patchfile* 0)
+;(define *fullpatchfile* 0)	; unused?
 (define *healfile* 0)
 
 ; tk init
@@ -167,7 +167,7 @@
 
 (define findlatestversion
   (lambda ()
-    (let ([foo (conc tempdir "/" revtxt)])
+    (let ([foo (conc tempdir "/" *revtxt*)])
       (if (file-exists? foo)
 	(begin    ; true case
 	  (let* ([filetime (file-modification-time foo)] [differ (- (current-seconds) filetime)])
@@ -175,12 +175,12 @@
 	      (findlatestversion-get))))
 	(findlatestversion-get))  ; false case of outer if
 
-      (let ([ver (string->number (read-line (open-input-file (conc tempdir "/" revtxt))))])
+      (let ([ver (string->number (read-line (open-input-file (conc tempdir "/" *revtxt*))))])
 	(set! *latestver* ver)))))
 
 (define findlatestversion-get
   (lambda ()
-    (let-values ([(a b c) (process downloader (append ariaversionline (list (conc partialurl "/" revtxt))))])
+    (let-values ([(a b c) (process downloader (append *ariaversionline* (list (conc *partialurl* "/" *revtxt*))))])
       (begin
 	(display->status a) ; we need to clear the port to close it but we dont want to display it
 	(close-input-port a)
@@ -202,9 +202,9 @@
 	  (set! *healfile* (conc "tf2classic-" dotver "-heal.zip"))
 
 	  (unless (= ver *latestver*)
-	    (set! patchfile (conc "tf2classic-patch" "-" ver "-" *latestver* ".pwr"))
-	    (set! fulltarballurl (conc *masterurl* "tf2classic-" dotlatestver ".meta4"))  ; metalink, not the literal tarball
-	    (set! full patchfile))
+	    (set! *patchfile* (conc "tf2classic-patch" "-" ver "-" *latestver* ".pwr"))
+	    (set! *fulltarballurl* (conc *masterurl* "tf2classic-" dotlatestver ".meta4"))  ; metalink, not the literal tarball
+	    (set! full *patchfile*))
 
 	  (begin
 	    (statusstate 1)
@@ -223,13 +223,13 @@
 	  (statusstate 1)
 	  (button2 'state 'disabled)
 	  (button3 'state 'disabled)
-	  (set! fulltarballurl (conc *masterurl* "tf2classic-" dotlatestver ".meta4"))
+	  (set! *fulltarballurl* (conc *masterurl* "tf2classic-" dotlatestver ".meta4"))
 	  (statusbox 'insert 'end "tf2c installation: not found\n")
 	  (statusstate 0))))))
 
 (define installproc
   (lambda ()
-    (let*-values ([(rid) (tk-get-var 'userdir)] [(a b c) (process downloader (append arialine (list fulltarballurl)))])
+    (let*-values ([(rid) (tk-get-var 'userdir)] [(a b c) (process downloader (append *arialine* (list *fulltarballurl*)))])
       (begin
 	(buttonstate 0)
 	(statusstate 1)
@@ -247,9 +247,9 @@
 	; we assume the latest version is the highest lexically, so
 	; we car the reversed list. note how we need to stick the car
 	; into a new list
-	(set! unpackline (append unpackline (list (car (reverse (glob (conc tempdir "/tf2classic-?.?.?.tar.zst")))))))
+	(set! *unpackline* (append *unpackline* (list (car (reverse (glob (conc tempdir "/tf2classic-?.?.?.tar.zst")))))))
 
-	(let-values ([(d e f g) (process* tar (append unpackline (list "-C" rid)))])
+	(let-values ([(d e f g) (process* tar (append *unpackline* (list "-C" rid)))])
 	  (display->status d)
 	  (statusbox 'insert 'end "\n")
 	  (sleep 2)
@@ -267,9 +267,9 @@
 (define upgradeproc
   (lambda ()
     (if (not (= *currentver* *latestver*))
-      (if (string? patchfile)
+      (if (string? *patchfile*)
 	(let*-values ([(rid) (tk-get-var 'userdir)]
-		      [(a b c) (process downloader (append arialine (list (conc *masterurl* patchfile))))])
+		      [(a b c) (process downloader (append *arialine* (list (conc *masterurl* *patchfile*))))])
 	  (begin
 	    (buttonstate 0)
 	    (statusstate 1)
@@ -288,8 +288,8 @@
 	    (create-directory (conc tempdir "/staging"))  ; does butler need this? we copy reference behavior
 
 	    (let*-values ([(tf2cdir) (conc rid "/tf2classic")]
-			  [(patchpath) (conc tempdir "/" patchfile)]
-			  [(x y z e) (process* butler (append butlerpatchline (list patchpath tf2cdir)))])
+			  [(patchpath) (conc tempdir "/" *patchfile*)]
+			  [(x y z e) (process* butler (append *butlerpatchline* (list patchpath tf2cdir)))])
 	      (begin
 		(statusbox 'insert 'end "applying patch..\n")
 		(display->status x)
