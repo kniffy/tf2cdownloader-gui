@@ -47,7 +47,7 @@
 ; returns size in kb
 ; we define a list and not a bigass string so as to not call
 ; a whole shell for the subprocess; we dont want to touch shell quotations
-(define *freespaceline* (list "--output=avail" *tempdir*)) ; todo check windows output
+(define *freespaceline* (list "--output=avail")) ; todo check windows output
 
 (define *arialine*
   (list
@@ -262,8 +262,6 @@
 
 	(statusstate 0)))))
 
-; TODO we need to do a verify pass to ensure upgrading can succeed,
-; there are cases where butler can fail
 (define upgradeproc
   (lambda ()
     (if (not (= *currentver* *latestver*))
@@ -341,7 +339,7 @@
 
 (define freespaceproc
   (lambda (dir)
-    (let-values ([(x y z a) (process* *df* (list "--output=avail" dir))])
+    (let-values ([(x y z a) (process* *df* (append *freespaceline* (list dir)))])
       (with-input-from-port x (lambda ()
         (port-for-each (lambda (word)
           (if (string->number word)
