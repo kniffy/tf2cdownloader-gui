@@ -23,31 +23,31 @@
 ; set some platform-specific stuff
 (cond-expand
   (windows
-    (define tempdir "C:\\TEMP")
-    (define downloader "bin\\aria2c.exe")
-    (define butler "bin\\butler.exe")
-    (define defaultdir "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
-    (define lct "bin\\tclkit.exe")
-    (define df "bin\\df")
-    (define tar "bin\\tar")
-    (define zstd "bin\\zstd"))
+    (define *tempdir* "C:\\TEMP")
+    (define *downloader* "bin\\aria2c.exe")
+    (define *butler* "bin\\butler.exe")
+    (define *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
+    (define *lct* "bin\\tclkit.exe")
+    (define *df* "bin\\df")
+    (define *tar* "bin\\tar")
+    (define *zstd* "bin\\zstd"))
 
   (linux
-    (define tempdir "/var/tmp")
-    (define downloader "bin/aria2c")
-    (define butler "bin/butler")
-    (define defaultdir
+    (define *tempdir* "/var/tmp")
+    (define *downloader* "bin/aria2c")
+    (define *butler* "bin/butler")
+    (define *defaultdir*
       (let ([user (get-environment-variable "USER")])
 	(conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))
-    (define lct "bin/tclkit")
-    (define df "df")
-    (define tar "bin/tar")
-    (define zstd "bin/zstd")))
+    (define *lct* "bin/tclkit")
+    (define *df* "df")
+    (define *tar* "bin/tar")
+    (define *zstd* "bin/zstd")))
 
 ; returns size in kb
 ; we define a list and not a bigass string so as to not call
 ; a whole shell for the subprocess; we dont want to touch shell quotations
-(define freespaceline (list "--output=avail" tempdir)) ; todo check windows output
+(define *freespaceline* (list "--output=avail" *tempdir*)) ; todo check windows output
 
 (define *arialine*
   (list
@@ -67,21 +67,21 @@
     "--bt-hash-check-seed=false"
     "--seed-time=0"
     "-d"
-    tempdir))
+    *tempdir*))
 
 (define *ariaversionline*
   (list "--enable-color=false"
         "-UTF2CDownloadergui2024-06-04"
         "--allow-overwrite=true"
         "-d"
-        tempdir))
+        *tempdir*))
 
 ; we append multiple args to some of these later
-(define *unpackline* (list "-kxv" "-I" zstd "-f"))
+(define *unpackline* (list "-kxv" "-I" *zstd* "-f"))
 
 (define *butlerpatchline*
   (list "apply"
-	(conc "--staging-dir=" (conc tempdir "/staging"))))
+	(conc "--staging-dir=" (conc *tempdir* "/staging"))))
 
 ; this is evaluated out below in the verify procedure
 ;(define butlerverifyline)
@@ -99,7 +99,7 @@
 
 ; tk init
 ;(tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
-(tk-start lct)
+(tk-start *lct*)
 (ttk-map-widgets 'all) ; use the ttk widget set
 (ttk/set-theme "clam")
 (tk/wm 'title tk "tf2cdownloader")
@@ -120,7 +120,7 @@
 (define button0 (tk 'create-widget 'button
 		   'text: "Browse"
 		   'command: (lambda ()
-			       (let ([cd (tk/choose-directory 'initialdir: defaultdir 'mustexist: 'true)])
+			       (let ([cd (tk/choose-directory 'initialdir: *defaultdir* 'mustexist: 'true)])
 				 (begin
 				   (tk-set-var! 'userdir cd)
 				   (freespaceproc (tk-get-var 'userdir))
@@ -167,7 +167,7 @@
 
 (define findlatestversion
   (lambda ()
-    (let ([foo (conc tempdir "/" *revtxt*)])
+    (let ([foo (conc *tempdir* "/" *revtxt*)])
       (if (file-exists? foo)
 	(begin    ; true case
 	  (let* ([filetime (file-modification-time foo)] [differ (- (current-seconds) filetime)])
@@ -175,12 +175,12 @@
 	      (findlatestversion-get))))
 	(findlatestversion-get))  ; false case of outer if
 
-      (let ([ver (string->number (read-line (open-input-file (conc tempdir "/" *revtxt*))))])
+      (let ([ver (string->number (read-line (open-input-file (conc *tempdir* "/" *revtxt*))))])
 	(set! *latestver* ver)))))
 
 (define findlatestversion-get
   (lambda ()
-    (let-values ([(a b c) (process downloader (append *ariaversionline* (list (conc *partialurl* "/" *revtxt*))))])
+    (let-values ([(a b c) (process *downloader* (append *ariaversionline* (list (conc *partialurl* "/" *revtxt*))))])
       (begin
 	(display->status a) ; we need to clear the port to close it but we dont want to display it
 	(close-input-port a)
@@ -229,7 +229,7 @@
 
 (define installproc
   (lambda ()
-    (let*-values ([(rid) (tk-get-var 'userdir)] [(a b c) (process downloader (append *arialine* (list *fulltarballurl*)))])
+    (let*-values ([(rid) (tk-get-var 'userdir)] [(a b c) (process *downloader* (append *arialine* (list *fulltarballurl*)))])
       (begin
 	(buttonstate 0)
 	(statusstate 1)
@@ -247,9 +247,9 @@
 	; we assume the latest version is the highest lexically, so
 	; we car the reversed list. note how we need to stick the car
 	; into a new list
-	(set! *unpackline* (append *unpackline* (list (car (reverse (glob (conc tempdir "/tf2classic-?.?.?.tar.zst")))))))
+	(set! *unpackline* (append *unpackline* (list (car (reverse (glob (conc *tempdir* "/tf2classic-?.?.?.tar.zst")))))))
 
-	(let-values ([(d e f g) (process* tar (append *unpackline* (list "-C" rid)))])
+	(let-values ([(d e f g) (process* *tar* (append *unpackline* (list "-C" rid)))])
 	  (display->status d)
 	  (statusbox 'insert 'end "\n")
 	  (sleep 2)
@@ -269,7 +269,7 @@
     (if (not (= *currentver* *latestver*))
       (if (string? *patchfile*)
 	(let*-values ([(rid) (tk-get-var 'userdir)]
-		      [(a b c) (process downloader (append *arialine* (list (conc *masterurl* *patchfile*))))])
+		      [(a b c) (process *downloader* (append *arialine* (list (conc *masterurl* *patchfile*))))])
 	  (begin
 	    (buttonstate 0)
 	    (statusstate 1)
@@ -285,11 +285,11 @@
 	    (statusstate 1)
 
 	    ; now we set up wot butler will do
-	    (create-directory (conc tempdir "/staging"))  ; does butler need this? we copy reference behavior
+	    (create-directory (conc *tempdir* "/staging"))  ; does butler need this? we copy reference behavior
 
 	    (let*-values ([(tf2cdir) (conc rid "/tf2classic")]
-			  [(patchpath) (conc tempdir "/" *patchfile*)]
-			  [(x y z e) (process* butler (append *butlerpatchline* (list patchpath tf2cdir)))])
+			  [(patchpath) (conc *tempdir* "/" *patchfile*)]
+			  [(x y z e) (process* *butler* (append *butlerpatchline* (list patchpath tf2cdir)))])
 	      (begin
 		(statusbox 'insert 'end "applying patch..\n")
 		(display->status x)
@@ -325,7 +325,7 @@
 					    (conc rid "/tf2classic")
 					    (conc "--heal=archive," *masterurl* *healfile*))])
 
-      (let-values ([(a b c d) (process* butler butlerverifyline)])
+      (let-values ([(a b c d) (process* *butler* butlerverifyline)])
 	(begin
 	  (buttonstate 0)
 	  (statusstate 1)
@@ -341,7 +341,7 @@
 
 (define freespaceproc
   (lambda (dir)
-    (let-values ([(x y z a) (process* df (list "--output=avail" dir))])
+    (let-values ([(x y z a) (process* *df* (list "--output=avail" dir))])
       (with-input-from-port x (lambda ()
         (port-for-each (lambda (word)
           (if (string->number word)
