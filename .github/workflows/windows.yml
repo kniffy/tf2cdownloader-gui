@@ -1,22 +1,22 @@
-name: Master
+#name: Master
 
-on: 
-   push:
-     branches : 
-       - master
+#on: 
+#   push:
+#     branches : 
+#       - master
 
-jobs:
-  Windows-Chicken:
-    runs-on: windows-2019
+#jobs:
+#  Windows-Chicken:
+#    runs-on: windows-2019
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@master
-
-      - name: use Setup-Scheme
-        uses: guenchi/setup-scheme@master
-        with:
-          implementation: chicken
-
-      - run: chicken-install -s pstk r7rs
-      - run: csc -vvv -gui -static -o tf2cd.exe tf2cd.scm
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@master
+#
+#      - name: use Setup-Scheme
+#        uses: guenchi/setup-scheme@master
+#        with:
+#          implementation: chicken
+#
+#      - run: chicken-install -s pstk r7rs
+#      - run: csc -vvv -gui -static -o tf2cd.exe tf2cd.scm
