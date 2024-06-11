@@ -23,28 +23,32 @@
 (define *zstd* (~a (find-executable-path "zstd")))
 
 ; we query the environment for the home dir,
-; convert to string, and concatenate 
+; convert to string, and concatenate
+; this is probably pointless, as we know the sourcemods
+; path on windows is not here
 (define *defaultdir*
   (string-append (~a (find-system-path 'home-dir))
                  ".local/share/Steam/steamapps/sourcemods"))
 
-; all the init+drawing the gui is in this
-; render block
+; fuck it we draw
 (render
  (window #:title "tf2cdownloader"
-         #:size '(600 300)
+         #:size '(600 200)
          #:position 'center
-  (text "sourcemods dir:")
 
-  (hpanel
-   (input "select a dir :^)")
-   (button "Browse"
-           (lambda () (display "brwose"))))
-  
-  (hpanel
-   (button "foo"
-           (lambda () (display "New Install")))
-   (button "bar"
-           (lambda () (display "Upgrade")))
-   (button "baz"
-           (lambda () (display "Verify"))))))
+         (hpanel
+          (input "select sourcemods directory :^)")
+          (button "Browse"
+                  (lambda () (display "brwose"))))
+
+         (hpanel #:alignment '(center center)
+                 (button "New Install"
+                         #:min-size '(200 10)
+                         (lambda () (display "New Install")))
+
+                 (button "Upgrade"
+                         #:min-size '(200 10)
+                         (lambda () (display "Upgrade")))
+                 (button "Verify"
+                         #:min-size '(200 10)
+                         (lambda () (display "Verify"))))))
