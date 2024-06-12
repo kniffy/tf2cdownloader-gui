@@ -25,15 +25,16 @@
 
 ; we query the environment for the home dir,
 ; convert to string, and concatenate
-; this is probably pointless, as we know the sourcemods
-; path on windows is not here
-(define *defaultdir*
-  (string-append (~a (find-system-path 'home-dir))
-                 ".local/share/Steam/steamapps/sourcemods"))
+; this is probably dumb, keep the old message..
+(define *defaultdir* 0)
+(if (string=? (~a (system-type 'os)) "unix")
+    (set! *defaultdir* (string-append (~a (find-system-path 'home-dir))
+                                      ".local/share/Steam/steamapps/sourcemods"))
+    (set! *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods"))
 
 ; like the old tk version, we need to set a fancy variable
 ; for the text field, denoted by the @ symbol
-(define @userdir (obs "foo"))
+(define @userdir (obs *defaultdir*))
 
 ; procedures!!
 
