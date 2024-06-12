@@ -4,6 +4,7 @@
          racket/format
          racket/gui/easy
          (prefix-in gui: racket/gui)
+         racket/system
          srfi/7)
 
 ; global vars
@@ -36,10 +37,31 @@
 ; for the text field, denoted by the @ symbol
 (define @userdir (obs *defaultdir*))
 
+; subprocess vars
+
+(define *df-args* " --output=avail ")
+
 ; procedures!!
 
-(define (freespace?)
-  (display "fuck it we free"))
+; this is more cursed than in Chicken somehow..
+; the process function wants a bigass string
+(define freespace?
+  (lambda (dir)
+    (let*-values ([(proclist) (process (string-append *df* *df-args* dir " | tail -n 1"))]
+                  [(out in z err) (values (list-ref proclist 0) (list-ref proclist 1) (list-ref proclist 2) (list-ref proclist 3))])
+      ;(define-values (out in z err) (values (list-ref proclist 0) 1 2 3))
+
+      (display (read-line out))
+      (display "\nerrors:\n")
+      (display (read-line err)))))
+
+      ;(close-input-port x)
+      ;(close-output-port y)
+      ;(close-input-port a))))
+
+; TODO define a boilerplate function to call
+; a subprocess and open the ports
+; and define a close-proc secondary lambda
 
 ; fuck it we draw
 (render
@@ -52,13 +74,13 @@
 
           (button "Browse"
                   (lambda ()
-                    (define filename (gui:get-directory "hi"))
-                    (when filename
+                    (define dir (gui:get-directory "hi"))
+                    (when dir
                       (thread
                        (lambda ()
                          (begin
-                           (freespace?)
-                           (obs-set! @userdir (~a filename)))))))))
+                           (freespace? (~a dir))
+                           (obs-set! @userdir (~a dir)))))))))
 
          (hpanel #:alignment '(center center)
                  (button "New Install"
