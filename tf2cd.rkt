@@ -39,7 +39,8 @@
 
 ; subprocess vars
 
-(define *df-args* " --output=avail ")
+(define *df-args* "--output=avail")
+;(define *df-args* "--version")
 
 ; procedures!!
 
@@ -47,13 +48,16 @@
 ; the process function wants a bigass string
 (define freespace?
   (lambda (dir)
-    (let*-values ([(proclist) (process (string-append *df* *df-args* dir " | tail -n 1"))]
-                  [(out in z err) (values (list-ref proclist 0) (list-ref proclist 1) (list-ref proclist 2) (list-ref proclist 3))])
+    (let*-values ([(proc) ;(subprocess #f #f #f *df* *df-args* dir)])
+                   (process* *df* *df-args* dir)]
+                  [(out in err) (values (list-ref proc 0) (list-ref proc 1) (list-ref proc 3))])
+                   
+
       ;(define-values (out in z err) (values (list-ref proclist 0) 1 2 3))
 
-      (display (read-line out))
-      (display "\nerrors:\n")
-      (display (read-line err)))))
+      (printf "stdout:\n~a" (port->string out))
+      (printf "stderr:\n~a" (port->string err)))))
+      
 
       ;(close-input-port x)
       ;(close-output-port y)
