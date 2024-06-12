@@ -31,6 +31,15 @@
   (string-append (~a (find-system-path 'home-dir))
                  ".local/share/Steam/steamapps/sourcemods"))
 
+; like the old tk version, we need to set a fancy variable
+; for the text field, denoted by the @ symbol
+(define @userdir (obs "foo"))
+
+; procedures!!
+
+(define (freespace?)
+  (display "fuck it we free"))
+
 ; fuck it we draw
 (render
  (window #:title "tf2cdownloader"
@@ -38,14 +47,17 @@
          #:position 'center
 
          (hpanel
-          (input "select sourcemods directory :^)")
+          (input @userdir)
+
           (button "Browse"
                   (lambda ()
-                    (define filename (gui:get-directory))
+                    (define filename (gui:get-directory "hi"))
                     (when filename
                       (thread
-                       (lambda () (display
-                                   (explode-path filename))))))))
+                       (lambda ()
+                         (begin
+                           (freespace?)
+                           (obs-set! @userdir (~a filename)))))))))
 
          (hpanel #:alignment '(center center)
                  (button "New Install"
