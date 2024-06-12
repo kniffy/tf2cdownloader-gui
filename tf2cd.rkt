@@ -3,6 +3,7 @@
 (require racket/base
          racket/format
          racket/gui/easy
+         (prefix-in gui: racket/gui)
          srfi/7)
 
 ; global vars
@@ -39,7 +40,12 @@
          (hpanel
           (input "select sourcemods directory :^)")
           (button "Browse"
-                  (lambda () (display "brwose"))))
+                  (lambda ()
+                    (define filename (gui:get-directory))
+                    (when filename
+                      (thread
+                       (lambda () (display
+                                   (explode-path filename))))))))
 
          (hpanel #:alignment '(center center)
                  (button "New Install"
