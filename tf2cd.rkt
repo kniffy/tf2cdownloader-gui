@@ -9,8 +9,8 @@
 
 ; global vars
 
-; we find the system bins for these, we need bugs fixed for
-; calling cosmos APE binaries
+; we find the system bins for these, linux
+; people should have them anyway
 ; this must happen before we mangle $PATH
 (define *df* (~a (find-executable-path "df")))
 (define *tar* (~a (find-executable-path "tar")))
@@ -47,25 +47,38 @@
 ; procedures!!
 
 ; this is more cursed than in Chicken somehow..
-; the process function wants a bigass string
+; we MUST use non-star process/system procedures,
+; the cosmos bins do not work when executed directly
 (define freespace?
   (lambda (dir)
-    (let*-values ([(proc) (process* *df* *df-args* dir)]
+    (let*-values ([(proc) (process (string-join (list *df* *df-args* dir)))]
                   [(out in err) (values (list-ref proc 0) (list-ref proc 1) (list-ref proc 3))])
 
       ;(define-values (out in z err) (values (list-ref proclist 0) 1 2 3))
 
       (printf "stdout:\n~a" (port->string out))
-      (printf "stderr:\n~a" (port->string err)))))
+      (printf "stderr:\n~a" (port->string err))
       
 
-      ;(close-input-port x)
-      ;(close-output-port y)
-      ;(close-input-port a))))
+      (close-input-port out)
+      (close-output-port in)
+      (close-input-port err))))
 
 ; TODO define a boilerplate function to call
 ; a subprocess and open the ports
 ; and define a close-proc secondary lambda
+
+(define begin-process
+  (lambda cmds
+    (let*-values ([(proc) (process (string-join cmds))]
+                  [(out in err) (values (list-ref proc 0) (list-ref proc 1) (list-ref proc 3))])
+
+      (printf "stdout:\n~a" (port->string out))
+      (printf "stderr:\n~a" (port->string err))
+
+      (close-input-port out)
+      (close-output-port in)
+      (close-input-port err))))
 
 ; fuck it we draw
 (render
