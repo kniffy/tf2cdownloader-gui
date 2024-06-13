@@ -3,9 +3,9 @@
 (require racket/base
          racket/format
          racket/gui/easy
-         (prefix-in gui: racket/gui)
-         racket/system
-         srfi/7)
+         racket/system)
+
+(require (prefix-in gui: racket/gui))
 
 ; global vars
 
@@ -16,13 +16,14 @@
 (define *tar* (~a (find-executable-path "tar")))
 (define *zstd* (~a (find-executable-path "zstd")))
 
-; we set our PATH environment var to be relative to where
-; tf2cd is launched from, and build the path cross-platform-y?
-; this is actually automatic on windows, but linux people are strange
+; this is such a fucking annoying hack, find-executable-path is a shit
+; ass fucking procedure and we cant get it to work to search our local
+; bin unless its in $PATH - shouldnt be required on windows as it
+; naturally understands we want our fucking local bin as first choice
 (putenv "PATH" (~a (build-path (current-directory) "bin")))
 
-; find-executable-path will search a second time with ".exe" added if #f is
-; returned initially - in other words, dont ship linux shit for windowsdist :^)
+; find-executable-path should find the .exe versions on windows
+; mayb dont ship the linux bins in the dist tarball :^)
 (define *aria* (~a (find-executable-path "aria2c")))
 (define *butler* (~a (find-executable-path "butler")))
 
