@@ -9,6 +9,13 @@
 
 ; global vars
 
+; we find the system bins for these, we need bugs fixed for
+; calling cosmos APE binaries
+; this must happen before we mangle $PATH
+(define *df* (~a (find-executable-path "df")))
+(define *tar* (~a (find-executable-path "tar")))
+(define *zstd* (~a (find-executable-path "zstd")))
+
 ; we set our PATH environment var to be relative to where
 ; tf2cd is launched from, and build the path cross-platform-y?
 ; this is actually automatic on windows, but linux people are strange
@@ -19,18 +26,14 @@
 (define *aria* (~a (find-executable-path "aria2c")))
 (define *butler* (~a (find-executable-path "butler")))
 
-; these utils are fully cross-platform
-(define *df* (~a (find-executable-path "df")))
-(define *tar* (~a (find-executable-path "tar")))
-(define *zstd* (~a (find-executable-path "zstd")))
-
 ; we query the environment for the home dir,
 ; convert to string, and concatenate
 ; this is probably dumb, keep the old message..
 (define *defaultdir* 0)
 (if (string=? (~a (system-type 'os)) "unix")
-    (set! *defaultdir* (string-append (~a (find-system-path 'home-dir))
-                                      ".local/share/Steam/steamapps/sourcemods"))
+    (set! *defaultdir* (string-append
+                        (~a (find-system-path 'home-dir))
+                        ".local/share/Steam/steamapps/sourcemods"))
     (set! *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods"))
 
 ; like the old tk version, we need to set a fancy variable
@@ -38,9 +41,7 @@
 (define @userdir (obs *defaultdir*))
 
 ; subprocess vars
-
 (define *df-args* "--output=avail")
-;(define *df-args* "--version")
 
 ; procedures!!
 
@@ -48,10 +49,8 @@
 ; the process function wants a bigass string
 (define freespace?
   (lambda (dir)
-    (let*-values ([(proc) ;(subprocess #f #f #f *df* *df-args* dir)])
-                   (process* *df* *df-args* dir)]
+    (let*-values ([(proc) (process* *df* *df-args* dir)]
                   [(out in err) (values (list-ref proc 0) (list-ref proc 1) (list-ref proc 3))])
-                   
 
       ;(define-values (out in z err) (values (list-ref proclist 0) 1 2 3))
 
