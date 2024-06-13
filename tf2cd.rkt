@@ -51,7 +51,9 @@
 ; the cosmos bins do not work when executed directly
 (define freespace?
   (lambda (dir)
-    (begin-process *df* *df-args* dir)))
+    (let ([a (begin-process *df* *df-args* dir)])
+      ; stub
+      (display a))))
 
 ; this is mostly a stub to be improved
 ; for now we just print to console; we
@@ -64,12 +66,23 @@
     (let*-values ([(proc) (process (string-join cmds))]
                   [(out in err) (values (list-ref proc 0) (list-ref proc 1) (list-ref proc 3))])
 
-      (printf "stdout:\n~a" (port->string out))
-      (printf "stderr:\n~a" (port->string err))
+      ;(printf "stdout:\n~a" (port->string out))
+      ;(printf "stderr:\n~a" (port->string err))
 
-      (close-input-port out)
-      (close-output-port in)
-      (close-input-port err))))
+      (begin
+        (define templist (port->lines out))
+        (set! templist (map (lambda (z) (string->number z)) templist))
+        (end-process out in err proc))
+
+      ; we set our return value by writing it last
+      (car (filter number? templist)))))
+
+; only call this within a begin-process
+(define end-process
+  (lambda (x y z a)
+    (close-input-port x)
+    (close-output-port y)
+    (close-input-port z)))
 
 ; fuck it we draw
 (render
