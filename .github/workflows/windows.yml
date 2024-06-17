@@ -19,4 +19,5 @@ jobs:
           implementation: chicken
 
       - run: chicken-install -s pstk
+      - run: cp C:/tools/chicken/share/chicken/chicken.rc.o C:/tools/chicken/share/chicken/chicken.rc.obj
       - run: csc -vvv -gui -static -o tf2cd.exe tf2cd.scm
