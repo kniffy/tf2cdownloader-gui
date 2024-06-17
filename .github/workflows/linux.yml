@@ -18,7 +18,7 @@ jobs:
       with:
         implementation: chicken
 
-    - run: chicken-install -s pstk r7rs
+    - run: chicken-install -s pstk
     - run: mkdir z
     - run: csc -vvv -gui -static -O3 -o z/tf2cd tf2cd.scm
 
