@@ -1,4 +1,4 @@
-(import (r7rs)
+(import ;(r7rs)
 	(chicken file)
 	(chicken file posix)
 	(chicken io)
