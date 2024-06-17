@@ -30,12 +30,12 @@
 ; we query the environment for the home dir,
 ; convert to string, and concatenate
 ; this is probably dumb, keep the old message..
-(define *defaultdir* 0)
-(if (string=? (~a (system-type 'os)) "unix")
-    (set! *defaultdir* (string-append
-                        (~a (find-system-path 'home-dir))
-                        ".local/share/Steam/steamapps/sourcemods"))
-    (set! *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods"))
+(define *defaultdir* "pick a dir :^)")
+;(if (string=? (~a (system-type 'os)) "unix")
+;    (set! *defaultdir* (string-append
+;                        (~a (find-system-path 'home-dir))
+;                        ".local/share/Steam/steamapps/sourcemods"))
+;    (set! *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods"))
 
 ; like the old tk version, we need to set a fancy variable
 ; for the text field, denoted by the @ symbol
@@ -52,8 +52,15 @@
 (define freespace?
   (lambda (dir)
     (let ([a (begin-process *df* *df-args* dir)])
-      ; stub
-      (display a))))
+      (begin
+        (define parse-list a)
+        (set! parse-list (map (lambda (z) (string->number z)) parse-list)))
+
+      ; our number
+      (let ([p (car (filter number? parse-list))])
+        (if (< p 20000000)
+            (display "free space check: failed?\n")
+            (display "free space check: passed!\n"))))))
 
 ; this is mostly a stub to be improved
 ; for now we just print to console; we
@@ -66,16 +73,14 @@
     (let*-values ([(proc) (process (string-join cmds))]
                   [(out in err) (values (list-ref proc 0) (list-ref proc 1) (list-ref proc 3))])
 
-      ;(printf "stdout:\n~a" (port->string out))
-      ;(printf "stderr:\n~a" (port->string err))
-
+      ; this is not suitable for a long running
+      ; process like aria2; that requires poking the RPC
       (begin
-        (define templist (port->lines out))
-        (set! templist (map (lambda (z) (string->number z)) templist))
+        (define returnlist (port->lines out))
         (end-process out in err proc))
 
       ; we set our return value by writing it last
-      (car (filter number? templist)))))
+      returnlist)))
 
 ; only call this within a begin-process
 (define end-process
