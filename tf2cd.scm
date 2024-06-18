@@ -192,15 +192,15 @@
 	  [file "/tf2classic/rev.txt"] [full ""]
 	  [dotlatestver (string-intersperse (string-chop (number->string *latestver*) 1) ".")])
 
+      ; we gotta set this to global var to work around glob gremlins in the unpack proc
+      (set! *dotlatestver* dotlatestver)
+
       (if (file-exists? (conc dir file))
 	(let* ([ver (string->number (read-line (open-input-file (conc dir file))))]
 	       [dotver (string-intersperse (string-chop (number->string ver) 1) ".")])
 
 	  (set! *currentver* ver)
 	  (set! *healfile* (conc "tf2classic-" dotver "-heal.zip"))
-
-	  ; we gotta set this to global var to work around glob gremlins in the unpack proc
-	  (set! *dotlatestver* dotlatestver)
 
 	  (unless (= ver *latestver*)
 	    (set! *patchfile* (conc "tf2classic-patch" "-" ver "-" *latestver* ".pwr"))
