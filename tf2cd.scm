@@ -244,16 +244,9 @@
 	; fuck it we ball (unpack)
 	(statusbox 'insert 'end "Unpacking.. \n")
 
-	; sanity checking if there are multiple tarballs in tmp dir
-	; we assume the latest version is the highest lexically, so
-	; we car the reversed list. note how we need to stick the car
-	; into a new list
-	; TODO undo this globbing, we already know the latest version!
-	(cond-expand
-	  (windows
-	    (set! *unpackline* (append *unpackline* (list (conc "/tf2classic-" *dotlatestver* ".tar.zst")))))
-	  (linux
-	    (set! *unpackline* (append *unpackline* (list (car (reverse (glob (conc *tempdir* "/tf2classic-?.?.?.tar.zst")))))))))
+	; we know the latest version already, so just append to the args list
+	; no need to worry about users cleaning up first :^)
+	(set! *unpackline* (append *unpackline* (list (conc *tempdir* "/tf2classic-" *dotlatestver* ".tar.zst"))))
 
 	(let-values ([(d e f g) (process* *tar* (append *unpackline* (list "-C" rid)))])
 	  (display->status d)
