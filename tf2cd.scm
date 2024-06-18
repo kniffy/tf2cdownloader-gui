@@ -161,6 +161,7 @@
 ; tk is a fuck with touching its precious variables, so we call tk-get-var
 (define *currentver*)
 (define *latestver*)
+(define *dotlatestver*)
 
 (define findlatestversion
   (lambda ()
@@ -197,6 +198,9 @@
 
 	  (set! *currentver* ver)
 	  (set! *healfile* (conc "tf2classic-" dotver "-heal.zip"))
+
+	  ; we gotta set this to global var to work around glob gremlins in the unpack proc
+	  (set! *dotlatestver* dotlatestver)
 
 	  (unless (= ver *latestver*)
 	    (set! *patchfile* (conc "tf2classic-patch" "-" ver "-" *latestver* ".pwr"))
@@ -244,7 +248,12 @@
 	; we assume the latest version is the highest lexically, so
 	; we car the reversed list. note how we need to stick the car
 	; into a new list
-	(set! *unpackline* (append *unpackline* (list (car (reverse (glob (conc *tempdir* "/tf2classic-?.?.?.tar.zst")))))))
+	; TODO undo this globbing, we already know the latest version!
+	(cond-expand
+	  (windows
+	    (set! *unpackline* (append *unpackline* (list (conc "/tf2classic-" *dotlatestver* ".tar.zst")))))
+	  (linux
+	    (set! *unpackline* (append *unpackline* (list (car (reverse (glob (conc *tempdir* "/tf2classic-?.?.?.tar.zst")))))))))
 
 	(let-values ([(d e f g) (process* *tar* (append *unpackline* (list "-C" rid)))])
 	  (display->status d)
