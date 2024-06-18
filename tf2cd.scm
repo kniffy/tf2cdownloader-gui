@@ -1,5 +1,4 @@
-(import ;(r7rs)
-	(chicken file)
+(import (chicken file)
 	(chicken file posix)
 	(chicken io)
 	(chicken port)
@@ -12,9 +11,8 @@
 (import (pstk))
 
 ; TODO windows testing!
-; in theory everything should work, but a few things
-; like the posix query for file modified time may be
-; weird on windows
+; bins without .exe are a bit weird - symlink?
+; pathnames may be fuckity
 
 ; NOTE our variable definitions generally go up here,
 ; but for cursed reasons some of them are below, under
@@ -47,7 +45,7 @@
 ; returns size in kb
 ; we define a list and not a bigass string so as to not call
 ; a whole shell for the subprocess; we dont want to touch shell quotations
-(define *freespaceline* (list "--output=avail")) ; todo check windows output
+(define *freespaceline* (list "--output=avail"))
 
 (define *arialine*
   (list
@@ -103,7 +101,6 @@
 (ttk-map-widgets 'all) ; use the ttk widget set
 (ttk/set-theme "clam")
 (tk/wm 'title tk "tf2cdownloader")
-;(tk/wm 'minsize tk 800 600)
 (tk/wm 'resizable tk 0 0)
 
 ; we must initialize tk vars like so
