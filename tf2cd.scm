@@ -1,6 +1,8 @@
 (import (chicken file)
 	(chicken file posix)
+	(chicken format)
 	(chicken io)
+	(chicken pathname)
 	(chicken port)
 	(chicken process)
 	(chicken process-context)
@@ -10,37 +12,33 @@
 
 (import (pstk))
 
-; TODO windows testing!
-; bins without .exe are a bit weird - symlink?
-; pathnames may be fuckity
-
 ; NOTE our variable definitions generally go up here,
 ; but for cursed reasons some of them are below, under
 ; the tk gui block, tk is a bitch with passing vars
 
+(define *downloader* (make-pathname "bin" "aria2c"))
+(define *butler* (make-pathname "bin" "butler"))
+(define *ttccll* (make-pathname "bin" "tclkit"))
+(define *df* (make-pathname "bin" "df" "exe"))
+(define *tar* (make-pathname "bin" "tar" "exe"))
+(define *zstd* (make-pathname "bin" "zstd" "exe"))
+
 ; set some platform-specific stuff
+; TODO switch paths to more sane choices, build up with make-pathname
 (cond-expand
   (windows
-    (define *tempdir* "C:\\TEMP")
-    (define *downloader* "bin\\aria2c.exe")
-    (define *butler* "bin\\butler.exe")
-    (define *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
-    (define *lct* "bin\\tclkit.exe")
-    (define *df* "bin\\df")
-    (define *tar* "bin\\tar")
-    (define *zstd* "bin\\zstd"))
+   (set! *downloader* (pathname-replace-extension *downloader* "exe"))
+   (set! *butler* (pathname-replace-extension *butler* "exe"))
+   (set! *ttccll* (pathname-replace-extension *ttccll* "exe"))
+
+   (define *tempdir* "C:\\TEMP")
+   (define *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods"))
 
   (linux
     (define *tempdir* "/var/tmp")
-    (define *downloader* "bin/aria2c")
-    (define *butler* "bin/butler")
     (define *defaultdir*
       (let ([user (get-environment-variable "USER")])
-	(conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))
-    (define *lct* "bin/tclkit")
-    (define *df* "df")
-    (define *tar* "bin/tar")
-    (define *zstd* "bin/zstd")))
+	(conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))))
 
 ; returns size in kb
 ; we define a list and not a bigass string so as to not call
@@ -51,7 +49,7 @@
   (list
     "--enable-color=false"
     "-x 16"
-    "-UTF2CDownloadergui2024-06-04"
+    "-UTF2CDownloadergui2024-06-24"
     "--allow-piece-length-change=true"
     "-j 16"
     "--optimize-concurrent-downloads=true"
@@ -69,7 +67,7 @@
 
 (define *ariaversionline*
   (list "--enable-color=false"
-        "-UTF2CDownloadergui2024-06-04"
+        "-UTF2CDownloadergui2024-06-24"
         "--allow-overwrite=true"
         "-d"
         *tempdir*))
@@ -92,12 +90,10 @@
 
 ; we set this later in the version detection procedure
 (define *patchfile* 0)
-;(define *fullpatchfile* 0)	; unused?
 (define *healfile* 0)
 
 ; tk init
-;(tk-start "tclsh8.6") ; default calls tclsh8.6 - we will use tclkit
-(tk-start *lct*)
+(tk-start *ttccll*)
 (ttk-map-widgets 'all) ; use the ttk widget set
 (ttk/set-theme "clam")
 (tk/wm 'title tk "tf2cdownloader")
