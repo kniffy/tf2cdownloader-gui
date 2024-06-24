@@ -11,8 +11,8 @@ windows builds coming soon :^)
 `apt install chicken-bin` on debian  
 `pacman -S chicken` on arch  
 
-2. install `r7rs` and `pstk`  
-`chicken-install -sudo r7rs pstk`  
+2. install `pstk`  
+`chicken-install -sudo pstk`  
 
 3. compile  
 `csc -gui -O3 -d0 tf2cd.scm`  
