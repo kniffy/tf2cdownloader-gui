@@ -31,14 +31,14 @@
    (set! *butler* (pathname-replace-extension *butler* "exe"))
    (set! *ttccll* (pathname-replace-extension *ttccll* "exe"))
 
-   (define *tempdir* "C:\\TEMP")
+   (define *tempdir* (get-environment-variable "TEMP"))
    (define *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods"))
 
   (linux
-    (define *tempdir* "/var/tmp")
+    (define *tempdir* (make-absolute-pathname "var" "tmp"))
     (define *defaultdir*
       (let ([user (get-environment-variable "USER")])
-	(conc "/home/" user "/.local/share/Steam/steamapps/sourcemods")))))
+	(make-absolute-pathname (list "home" user ".local" "share" "Steam" "steamapps") "sourcemods")))))
 
 ; returns size in kb
 ; we define a list and not a bigass string so as to not call
@@ -289,8 +289,7 @@
 		(display->status e)
 		(close-input-port x)
 		(close-output-port y)
-		(close-input-port e)
-		(statusbox 'insert 'end "patched?\n")))
+		(close-input-port e)))
 
 	    (statusstate 0)
 	    (buttonstate 1)))
