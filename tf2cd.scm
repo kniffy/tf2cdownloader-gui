@@ -10,7 +10,8 @@
 	(chicken string)
 	(chicken time))
 
-(import (pstk))
+(import (json-abnf)
+	(pstk))
 
 ; NOTE our variable definitions generally go up here,
 ; but for cursed reasons some of them are below, under
@@ -106,9 +107,10 @@
 ; we must initialize tk vars like so
 (tk-var 'userdir)
 (tk-var 'selectedversion)
+(tk-var 'progress)
 
 ; widget definitions
-(define label0 (tk 'create-widget 'label 'text: "sourcemods directory:"))
+;(define label0 (tk 'create-widget 'label 'text: "sourcemods directory:"))
 
 (define entry (tk 'create-widget 'entry
 		  'textvariable: (tk-var 'userdir)
@@ -138,6 +140,13 @@
 		    'state: 'disabled
 		    'command: (lambda () (verifyproc))))
 
+(define prog (tk 'create-widget 'progressbar
+		 'length: 564
+		 'maximum: 1
+		 'mode: 'determinate
+		 'orient: 'horizontal
+		 'variable: (tk-var 'progress)))
+
 (define statusbox (tk 'create-widget 'text
 		      'height: 12
 		      'undo: 'false
@@ -147,12 +156,13 @@
 
 ; actually drawing the window and placing positions
 ; for readability, keep the same order as definitions
-(tk/grid label0 'row: 0 'column: 0 'pady: 10)
-(tk/grid entry 'row: 1 'column: 0 'columnspan: 3 'padx: 10)
+;(tk/grid label0 'row: 0 'column: 0 'pady: 10)
+(tk/grid entry 'row: 1 'column: 0 'columnspan: 3 'padx: 20 'pady: 20)
 (tk/grid button0 'row: 1 'column: 3 'padx: 10)		; browse
 (tk/grid button1 'row: 4 'column: 0 'pady: 10)		; install
 (tk/grid button2 'row: 4 'column: 1)			; upgrade
 (tk/grid button3 'row: 4 'column: 2)			; verify
+(tk/grid prog 'row: 5 'column: 0 'columnspan: 4)
 (tk/grid statusbox 'row: 6 'column: 0 'columnspan: 4)
 
 (entry 'insert 0 "pick a dir :^)")		; we cant put this in the initialization
@@ -319,7 +329,8 @@
 		  [(butlerverifyline) (list "verify"
 					    (conc *masterurl* "tf2classic" *currentver* ".sig")
 					    (conc rid "/tf2classic")
-					    (conc "--heal=archive," *masterurl* *healfile*))])
+					    (conc "--heal=archive," *masterurl* *healfile*)
+					    "--json")])
 
       (let-values ([(a b c d) (process* *butler* butlerverifyline)])
 	(begin
@@ -332,6 +343,7 @@
 	  (close-input-port d)
 
 	  (statusbox 'insert 'end "verified?\n")
+	  (tk-set-var! 'progress 1.0)
 	  (statusstate 0)
 	  (buttonstate 1))))))
 
@@ -359,17 +371,30 @@
 ; input is a port, iterates and prints the lines to the status box widget
 ; until it hits EOF - dont forget setting the box's state before/after use
 ; some filtering hacks are in here, only needed for butler ruining output
+
+; TODO handle the other couple of json output cases
 (define display->status
   (lambda (port)
     (with-input-from-port port
 	(lambda ()
 	  (port-for-each
 	    (lambda (word)
-	      (define trans (string-translate* word *badchars*))
-	      (statusbox 'insert 'end (conc trans "\n"))
-	      (statusbox 'see 'end))
+	      ;(define trans (string-translate* word *badchars*))
+	      (define json-foo)
+	      (set! json-foo (parser word))
+
+	      (if (assoc "progress" json-foo)
+		(progress-set! json-foo)
+		(begin  ; else case
+		  (statusbox 'insert 'end (conc word "\n"))
+		  (statusbox 'see 'end))))
 
 	    read-line)))))
+
+(define progress-set!
+  (lambda (z)
+    (when (assoc "progress" z)
+      (tk-set-var! 'progress (cdr (assoc "progress" z))))))
 
 ; we simplify some of the management of state
 (define buttonstate
