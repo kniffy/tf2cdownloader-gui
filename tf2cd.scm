@@ -194,6 +194,31 @@
 	(close-input-port a)
 	(close-output-port b)))))
 
+; this shit is on the chopping block, calling df
+; is fucking lame, but its nice to warn users..
+(define freespaceproc
+  (lambda (dir)
+    (let-values ([(x y z a) (process* *df* (append *freespaceline* (list dir)))])
+      (with-input-from-port x
+        (lambda ()
+          (port-for-each
+           (lambda (word)
+             (if (string->number word)
+                 (let ([p (string->number word)])
+                   (if (< p 20000000)
+                       (begin  ; true case
+                         (statusstate 1)
+                         (statusbox 'insert 'end "Free space check: Failed?\n at least 20gb needed!\n")
+                         (statusstate 0))
+                       (begin  ; else case
+                         (statusstate 1)
+                         (statusbox 'insert 'end "Free space check: Passed\n")
+                         (statusstate 0))))))
+           read-line)))
+      (close-input-port x)
+      (close-output-port y)
+      (close-input-port a))))
+
 ; this is fucking cursed, but we must account for malformed or
 ; erroneous rev.txt entries
 (define versiondetectproc
@@ -347,31 +372,9 @@
 	  (statusstate 0)
 	  (buttonstate 1))))))
 
-(define freespaceproc
-  (lambda (dir)
-    (let-values ([(x y z a) (process* *df* (append *freespaceline* (list dir)))])
-      (with-input-from-port x (lambda ()
-        (port-for-each (lambda (word)
-          (if (string->number word)
-            (let ([p (string->number word)])
-	      (if (< p 20000000)
-		(begin	; true case
-		  (statusstate 1)
-		  (statusbox 'insert 'end "Free space check: Failed?\n at least 20gb needed!\n")
-		  (statusstate 0))
-		(begin	; else case
-		  (statusstate 1)
-		  (statusbox 'insert 'end "Free space check: Passed\n")
-		  (statusstate 0))))))
-		       read-line)))
-      (close-input-port x)
-      (close-output-port y)
-      (close-input-port a))))
-
 ; input is a port, iterates and prints the lines to the status box widget
 ; until it hits EOF - dont forget setting the box's state before/after use
 ; some filtering hacks are in here, only needed for butler ruining output
-
 ; TODO handle the other couple of json output cases
 (define display->status
   (lambda (port)
@@ -391,6 +394,7 @@
 
 	    read-line)))))
 
+; helper for display->status, not a general procedure
 (define progress-set!
   (lambda (z)
     (when (assoc "progress" z)
