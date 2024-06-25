@@ -92,6 +92,8 @@
 (define *patchfile* 0)
 (define *healfile* 0)
 
+(define *badchars* '(("•" . "") ("✓" . "")))
+
 ; tk init
 (tk-start *ttccll*)
 (ttk-map-widgets 'all) ; use the ttk widget set
@@ -354,14 +356,18 @@
 
 ; input is a port, iterates and prints the lines to the status box widget
 ; until it hits EOF - dont forget setting the box's state before/after use
+; some filtering hacks are in here, only needed for butler ruining output
 (define display->status
   (lambda (port)
     (with-input-from-port port
-		  (lambda ()
-        (port-for-each (lambda (word)
-                         (statusbox 'insert 'end (conc word "\n"))
-                         (statusbox 'see 'end))
-                       read-line)))))
+	(lambda ()
+	  (port-for-each
+	    (lambda (word)
+	      (define trans (string-translate* word *badchars*))
+	      (statusbox 'insert 'end (conc trans "\n"))
+	      (statusbox 'see 'end))
+
+	    read-line)))))
 
 ; we simplify some of the management of state
 (define buttonstate
