@@ -92,7 +92,9 @@
 (define *patchfile* 0)
 (define *healfile* 0)
 
-(define *badchars* '(("•" . "") ("✓" . "") ("â" . "") ("" . "") ("" . "")))
+(define *badchars*
+  '(("•" . "") ("✓" . "") ("â" . "") ("" . "") ("" . "")
+    ("▐" . "") ("▓" . "") ("░" . "") ("▌" . "")))
 
 ; tk init
 (tk-start *ttccll*)
