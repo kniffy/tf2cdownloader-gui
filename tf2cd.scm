@@ -93,16 +93,15 @@
 (define *patchfile* 0)
 (define *healfile* 0)
 
-(define *badchars*
-  '(("•" . "") ("✓" . "") ("â" . "") ("" . "") ("" . "")
-    ("▐" . "") ("▓" . "") ("░" . "") ("▌" . "")))
-
 ; tk init
 (tk-start *ttccll*)
 (ttk-map-widgets 'all) ; use the ttk widget set
 (ttk/set-theme "clam")
 (tk/wm 'title tk "tf2cdownloader")
 (tk/wm 'resizable tk 0 0)
+
+(tk-eval "fconfigure stdin -encoding utf-8")
+(tk-eval "fconfigure stdout -encoding utf-8")
 
 ; we must initialize tk vars like so
 (tk-var 'userdir)
@@ -375,30 +374,31 @@
 ; input is a port, iterates and prints the lines to the status box widget
 ; until it hits EOF - dont forget setting the box's state before/after use
 ; some filtering hacks are in here, only needed for butler ruining output
-; TODO handle the other couple of json output cases
-(define display->status
-  (lambda (port)
-    (with-input-from-port port
-	(lambda ()
-	  (port-for-each
-	    (lambda (word)
-	      ;(define trans (string-translate* word *badchars*))
-	      (define json-foo)
-	      (set! json-foo (parser word))
+(define (display->status p)
+  (with-input-from-port p
+	  (lambda ()
+	    (port-for-each
+	     (lambda (word)
+         (statusbox 'insert 'end (conc word "\n"))
+		     (statusbox 'see 'end))
 
-	      (if (assoc "progress" json-foo)
-		(progress-set! json-foo)
-		(begin  ; else case
-		  (statusbox 'insert 'end (conc word "\n"))
-		  (statusbox 'see 'end))))
+	     read-line))))
 
-	    read-line)))))
+(define (display-json->status p)
+  (with-input-from-port p
+    (lambda ()
+      (port-for-each
+       (lambda (word)
+         (let ([json-foo (parser word)])
+           (when (assoc "progress" json-foo)
+             (progress-set! json-foo))))
+
+       read-line))))
 
 ; helper for display->status, not a general procedure
-(define progress-set!
-  (lambda (z)
-    (when (assoc "progress" z)
-      (tk-set-var! 'progress (cdr (assoc "progress" z))))))
+(define (progress-set! z)
+  (when (assoc "progress" z)
+    (tk-set-var! 'progress (cdr (assoc "progress" z)))))
 
 ; we simplify some of the management of state
 (define buttonstate
