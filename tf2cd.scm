@@ -25,7 +25,6 @@
 (define *zstd* (make-pathname "bin" "zstd" "exe"))
 
 ; set some platform-specific stuff
-; TODO switch paths to more sane choices, build up with make-pathname
 (cond-expand
   (windows
    (set! *downloader* (pathname-replace-extension *downloader* "exe"))
@@ -83,15 +82,16 @@
 ; this is evaluated out below in the verify procedure
 ;(define butlerverifyline)
 
+; kind of dumb vars, can clean up our code when we figure out json parsing
+(define *masterurl* "https://wiki.tf2classic.com/kachemak/")
 (define *partialurl* "http://fastdl.tildas.org/pub/downloader")
 (define *fulltarballurl* 0)
 (define *revtxt* "current")
-
-(define *masterurl* "https://wiki.tf2classic.com/kachemak/")
-
-; we set this later in the version detection procedure
 (define *patchfile* 0)
 (define *healfile* 0)
+(define *currentver*)
+(define *latestver*)
+(define *dotlatestver*)
 
 ; tk init
 (tk-start *ttccll*)
@@ -99,11 +99,10 @@
 (ttk/set-theme "clam")
 (tk/wm 'title tk "tf2cdownloader")
 (tk/wm 'resizable tk 0 0)
-
 (tk-eval "fconfigure stdin -encoding utf-8")
 (tk-eval "fconfigure stdout -encoding utf-8")
 
-; we must initialize tk vars like so
+; TK VARS! we gotta define them like this
 (tk-var 'userdir)
 (tk-var 'selectedversion)
 (tk-var 'progress)
@@ -166,11 +165,7 @@
 
 (entry 'insert 0 "pick a dir :^)")		; we cant put this in the initialization
 
-; we need some definitions down here to get around delayed-eval gremlins
-; tk is a fuck with touching its precious variables, so we call tk-get-var
-(define *currentver*)
-(define *latestver*)
-(define *dotlatestver*)
+; PROCEDURES!!
 
 (define (findlatestversion)
   (let ([foo (conc *tempdir* "/" *revtxt*)])
