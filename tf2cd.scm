@@ -139,7 +139,7 @@
 		    'command: (lambda () (verifyproc))))
 
 (define prog (tk 'create-widget 'progressbar
-		 'length: 564
+		 'length: 565
 		 'maximum: 1
 		 'mode: 'determinate
 		 'orient: 'horizontal
@@ -167,6 +167,8 @@
 
 ; PROCEDURES!!
 
+; TODO we only need to read versions.sexp for this
+; no need to call aria2 etc
 (define (findlatestversion)
   (let ([foo (conc *tempdir* "/" *revtxt*)])
     (if (file-exists? foo)
@@ -181,37 +183,39 @@
 
 (define (findlatestversion-get)
   (let-values ([(a b c) (process *downloader* (append *ariaversionline* (list (conc *partialurl* "/" *revtxt*))))])
-;    (begin
-      (display->status a) ; we need to clear the port to close it but we dont want to display it
-      (close-input-port a)
-      (close-output-port b)))
+    (display->status a) ; we need to clear the port to close it but we dont want to display it
+    (close-input-port a)
+    (close-output-port b)))
 
 ; this shit is on the chopping block, calling df
 ; is fucking lame, but its nice to warn users..
-(define (freespaceproc dir)
-  (let-values ([(x y z a) (process* *df* (append *freespaceline* (list dir)))])
-    (with-input-from-port x
-      (lambda ()
-        (port-for-each
-         (lambda (word)
-           (if (string->number word)
-               (let ([p (string->number word)])
-                 (if (< p 20000000)
-                     (begin  ; true case
-                       (statusstate 1)
-                       (statusbox 'insert 'end "Free space check: Failed?\n at least 20gb needed!\n")
-                       (statusstate 0))
-                     (begin  ; else case
-                       (statusstate 1)
-                       (statusbox 'insert 'end "Free space check: Passed\n")
-                       (statusstate 0))))))
-         read-line)))
-    (close-input-port x)
-    (close-output-port y)
-    (close-input-port a)))
+;(define (freespaceproc dir)
+;  (let-values ([(x y z a) (process* *df* (append *freespaceline* (list dir)))])
+;    (with-input-from-port x
+;      (lambda ()
+;        (port-for-each
+;         (lambda (word)
+;           (if (string->number word)
+;               (let ([p (string->number word)])
+;                 (if (< p 20000000)
+;                     (begin  ; true case
+;                       (statusstate 1)
+;                       (statusbox 'insert 'end "Free space check: Failed?\n at least 20gb needed!\n")
+;                       (statusstate 0))
+;                     (begin  ; else case
+;                       (statusstate 1)
+;                       (statusbox 'insert 'end "Free space check: Passed\n")
+;                       (statusstate 0))))))
+;         read-line)))
+;    (close-input-port x)
+;    (close-output-port y)
+;    (close-input-port a)))
 
-; this is fucking cursed, but we must account for malformed or
-; erroneous rev.txt entries
+; this is fucking cursed.
+; TODO rewrite all of this to be simpler
+; we can set! all of the URL variables by
+; just reading the versions.sexp file, no
+; need to evaluate it based on rev.txt
 (define versiondetectproc
   (lambda ()
     (let ([dir (tk-get-var 'userdir)]
@@ -352,7 +356,7 @@
 	(begin
 	  (buttonstate 0)
 	  (statusstate 1)
-	  (display->status a)
+	  (display-json->status a)
 	  (close-input-port a)
 	  (close-output-port b)
 	  (display->status d)
@@ -365,16 +369,15 @@
 
 ; input is a port, iterates and prints the lines to the status box widget
 ; until it hits EOF - dont forget setting the box's state before/after use
-; some filtering hacks are in here, only needed for butler ruining output
 (define (display->status p)
   (with-input-from-port p
-	  (lambda ()
-	    (port-for-each
-	     (lambda (word)
-         (statusbox 'insert 'end (conc word "\n"))
-		     (statusbox 'see 'end))
+    (lambda ()
+      (port-for-each
+        (lambda (word)
+          (statusbox 'insert 'end (conc word "\n"))
+          (statusbox 'see 'end))
 
-	     read-line))))
+      read-line))))
 
 (define (display-json->status p)
   (with-input-from-port p
