@@ -10,7 +10,9 @@
 	(chicken string)
 	(chicken time))
 
-(import (json-abnf)
+(import (http-client)
+	(json-abnf)
+	(openssl)
 	(pstk))
 
 ; NOTE our variable definitions generally go up here,
@@ -98,8 +100,8 @@
 (ttk-map-widgets 'all) ; use the ttk widget set
 (ttk/set-theme "clam")
 (tk/wm 'title tk "tf2cdownloader")
-(tk/wm 'resizable tk 0 0)
-(tk-eval "fconfigure stdin -encoding utf-8")
+(tk/wm 'resizable tk 0 0) ; dont let user resize window
+(tk-eval "fconfigure stdin -encoding utf-8") ; ensure utf8 mode
 (tk-eval "fconfigure stdout -encoding utf-8")
 
 ; TK VARS! we gotta define them like this
@@ -120,7 +122,7 @@
 			       (let ([cd (tk/choose-directory 'initialdir: *defaultdir* 'mustexist: 'true)])
 				 (begin
 				   (tk-set-var! 'userdir cd)
-				   (freespaceproc (tk-get-var 'userdir))
+				   ;(freespaceproc (tk-get-var 'userdir))
 				   (findlatestversion)
 				   (versiondetectproc))))))
 
@@ -167,14 +169,19 @@
 
 ; PROCEDURES!!
 
-; TODO we only need to read versions.sexp for this
-; no need to call aria2 etc
+; TODO pass in json file directly to parser
+; via http-client
 (define (findlatestversion)
+  (let ([versions (with-input-from-request "https://wiki.tf2classic.com/kachemak/versions.json" #f read-string)])
+    (display (parser versions))))
+
+
+(define (findlatestversion-old)
   (let ([foo (conc *tempdir* "/" *revtxt*)])
     (if (file-exists? foo)
       (let* ([filetime (file-modification-time foo)] [differ (- (current-seconds) filetime)])
-	(if (> differ 3600)
-	  (findlatestversion-get)))
+        (if (> differ 3600)
+          (findlatestversion-get)))
 
       (findlatestversion-get))  ; false case of outer if
 
