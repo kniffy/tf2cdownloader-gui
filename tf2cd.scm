@@ -43,7 +43,7 @@
   (list
     "--enable-color=false"
     "-x 16"
-    "-UTF2CDownloadergui2024-06-24"
+    "-UTF2CDownloadergui2024-07-10"
     "--allow-piece-length-change=true"
     "-j 16"
     "--optimize-concurrent-downloads=true"
@@ -61,7 +61,7 @@
 
 (define *ariaversionargs*
   (list "--enable-color=false"
-        "-UTF2CDownloadergui2024-06-24"
+        "-UTF2CDownloadergui2024-07-10"
         "--allow-overwrite=true"
         "-d"
         *tempdir*))
@@ -78,9 +78,9 @@
 
 ; kind of dumb vars, can clean up our code when we figure out json parsing
 (define *masterurl* "https://wiki.tf2classic.com/kachemak/")
-(define *partialurl* "http://fastdl.tildas.org/pub/downloader")
+(define *slaveurl* "http://fastdl.tildas.org/pub/downloader/")
 (define *fulltarballurl* 0)
-(define *revtxt* "current")
+(define *revtxt* "current") ; deprecated
 (define *patchfile* 0)
 (define *healfile* 0)
 (define *currentver*)
@@ -173,7 +173,7 @@
       (set! *latestver* ver))))
 
 (define (findlatestversion-get)
-  (let-values ([(a b c) (process *downloader* (append *ariaversionargs* (list (conc *partialurl* "/" *revtxt*))))])
+  (let-values ([(a b c) (process *downloader* (append *ariaversionargs* (list (conc *slaveurl* *revtxt*))))])
     (display->status a) ; we need to clear the port to close it but we dont want to display it
     (close-input-port a)
     (close-output-port b)))
