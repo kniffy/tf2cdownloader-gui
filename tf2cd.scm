@@ -10,9 +10,7 @@
 	(chicken string)
 	(chicken time))
 
-(import (http-client)
-	(json-abnf)
-	(openssl)
+(import (json-abnf)
 	(pstk))
 
 ; NOTE our variable definitions generally go up here,
@@ -22,7 +20,6 @@
 (define *downloader* (make-pathname "bin" "aria2c"))
 (define *butler* (make-pathname "bin" "butler"))
 (define *ttccll* (make-pathname "bin" "tclkit"))
-(define *df* (make-pathname "bin" "df" "exe"))
 (define *tar* (make-pathname "bin" "tar" "exe"))
 (define *zstd* (make-pathname "bin" "zstd" "exe"))
 
@@ -42,12 +39,7 @@
       (let ([user (get-environment-variable "USER")])
 	(make-absolute-pathname (list "home" user ".local" "share" "Steam" "steamapps") "sourcemods")))))
 
-; returns size in kb
-; we define a list and not a bigass string so as to not call
-; a whole shell for the subprocess; we dont want to touch shell quotations
-(define *freespaceline* (list "--output=avail"))
-
-(define *arialine*
+(define *ariaargs*
   (list
     "--enable-color=false"
     "-x 16"
@@ -67,7 +59,7 @@
     "-d"
     *tempdir*))
 
-(define *ariaversionline*
+(define *ariaversionargs*
   (list "--enable-color=false"
         "-UTF2CDownloadergui2024-06-24"
         "--allow-overwrite=true"
@@ -75,14 +67,14 @@
         *tempdir*))
 
 ; we append multiple args to some of these later
-(define *unpackline* (list "-kxv" "-I" *zstd* "-f"))
+(define *unpackargs* (list "-kxv" "-I" *zstd* "-f"))
 
-(define *butlerpatchline*
+(define *butlerpatchargs*
   (list "apply"
 	(conc "--staging-dir=" (conc *tempdir* "/staging"))))
 
 ; this is evaluated out below in the verify procedure
-;(define butlerverifyline)
+;(define butlerverifyargs)
 
 ; kind of dumb vars, can clean up our code when we figure out json parsing
 (define *masterurl* "https://wiki.tf2classic.com/kachemak/")
@@ -122,7 +114,6 @@
 			       (let ([cd (tk/choose-directory 'initialdir: *defaultdir* 'mustexist: 'true)])
 				 (begin
 				   (tk-set-var! 'userdir cd)
-				   ;(freespaceproc (tk-get-var 'userdir))
 				   (findlatestversion)
 				   (versiondetectproc))))))
 
@@ -169,14 +160,7 @@
 
 ; PROCEDURES!!
 
-; TODO pass in json file directly to parser
-; via http-client
 (define (findlatestversion)
-  (let ([versions (with-input-from-request "https://wiki.tf2classic.com/kachemak/versions.json" #f read-string)])
-    (display (parser versions))))
-
-
-(define (findlatestversion-old)
   (let ([foo (conc *tempdir* "/" *revtxt*)])
     (if (file-exists? foo)
       (let* ([filetime (file-modification-time foo)] [differ (- (current-seconds) filetime)])
@@ -189,34 +173,10 @@
       (set! *latestver* ver))))
 
 (define (findlatestversion-get)
-  (let-values ([(a b c) (process *downloader* (append *ariaversionline* (list (conc *partialurl* "/" *revtxt*))))])
+  (let-values ([(a b c) (process *downloader* (append *ariaversionargs* (list (conc *partialurl* "/" *revtxt*))))])
     (display->status a) ; we need to clear the port to close it but we dont want to display it
     (close-input-port a)
     (close-output-port b)))
-
-; this shit is on the chopping block, calling df
-; is fucking lame, but its nice to warn users..
-;(define (freespaceproc dir)
-;  (let-values ([(x y z a) (process* *df* (append *freespaceline* (list dir)))])
-;    (with-input-from-port x
-;      (lambda ()
-;        (port-for-each
-;         (lambda (word)
-;           (if (string->number word)
-;               (let ([p (string->number word)])
-;                 (if (< p 20000000)
-;                     (begin  ; true case
-;                       (statusstate 1)
-;                       (statusbox 'insert 'end "Free space check: Failed?\n at least 20gb needed!\n")
-;                       (statusstate 0))
-;                     (begin  ; else case
-;                       (statusstate 1)
-;                       (statusbox 'insert 'end "Free space check: Passed\n")
-;                       (statusstate 0))))))
-;         read-line)))
-;    (close-input-port x)
-;    (close-output-port y)
-;    (close-input-port a)))
 
 ; this is fucking cursed.
 ; TODO rewrite all of this to be simpler
@@ -267,7 +227,7 @@
 
 (define installproc
   (lambda ()
-    (let*-values ([(rid) (tk-get-var 'userdir)] [(a b c) (process *downloader* (append *arialine* (list *fulltarballurl*)))])
+    (let*-values ([(rid) (tk-get-var 'userdir)] [(a b c) (process *downloader* (append *ariaargs* (list *fulltarballurl*)))])
       (begin
 	(buttonstate 0)
 	(statusstate 1)
@@ -283,9 +243,9 @@
 
 	; we know the latest version already, so just append to the args list
 	; no need to worry about users cleaning up first :^)
-	(set! *unpackline* (append *unpackline* (list (conc *tempdir* "/tf2classic-" *dotlatestver* ".tar.zst"))))
+	(set! *unpackargs* (append *unpackargs* (list (conc *tempdir* "/tf2classic-" *dotlatestver* ".tar.zst"))))
 
-	(let-values ([(d e f g) (process* *tar* (append *unpackline* (list "-C" rid)))])
+	(let-values ([(d e f g) (process* *tar* (append *unpackargs* (list "-C" rid)))])
 	  (display->status d)
 	  (statusbox 'insert 'end "\n")
 	  (sleep 2)
@@ -303,7 +263,7 @@
     (if (not (= *currentver* *latestver*))
       (if (string? *patchfile*)
 	(let*-values ([(rid) (tk-get-var 'userdir)]
-		      [(a b c) (process *downloader* (append *arialine* (list (conc *masterurl* *patchfile*))))])
+		      [(a b c) (process *downloader* (append *ariaargs* (list (conc *masterurl* *patchfile*))))])
 	  (begin
 	    (buttonstate 0)
 	    (statusstate 1)
@@ -323,7 +283,7 @@
 
 	    (let*-values ([(tf2cdir) (conc rid "/tf2classic")]
 			  [(patchpath) (conc *tempdir* "/" *patchfile*)]
-			  [(x y z e) (process* *butler* (append *butlerpatchline* (list patchpath tf2cdir)))])
+			  [(x y z e) (process* *butler* (append *butlerpatchargs* (list patchpath tf2cdir)))])
 	      (begin
 		(statusbox 'insert 'end "applying patch..\n")
 		(display->status x)
@@ -353,13 +313,14 @@
 (define verifyproc
   (lambda ()
     (let*-values ([(rid) (tk-get-var 'userdir)]
-		  [(butlerverifyline) (list "verify"
-					    (conc *masterurl* "tf2classic" *currentver* ".sig")
-					    (conc rid "/tf2classic")
-					    (conc "--heal=archive," *masterurl* *healfile*)
-					    "--json")])
+		  [(butlerverifyargs)
+		   (list "verify"
+			 (conc *masterurl* "tf2classic" *currentver* ".sig")
+			 (conc rid "/tf2classic")
+			 (conc "--heal=archive," *masterurl* *healfile*)
+			 "--json")])
 
-      (let-values ([(a b c d) (process* *butler* butlerverifyline)])
+      (let-values ([(a b c d) (process* *butler* butlerverifyargs)])
 	(begin
 	  (buttonstate 0)
 	  (statusstate 1)
