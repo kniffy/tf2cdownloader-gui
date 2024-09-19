@@ -4,16 +4,14 @@ simple graphical downloader for Team Fortress 2 Classic
 static beta builds are available on the
 [releases](https://github.com/kniffy/tf2cdownloader-gui/releases) page  
 
-windows builds coming soon :^)  
-
 ### building
 1. install `chicken`  
 `apt install chicken-bin` on debian  
 `pacman -S chicken` on arch  
 
-2. install `pstk`  
-`chicken-install -sudo pstk`  
+2. install `pstk` and `json-abnf`  
+`chicken-install -sudo pstk json-abnf`  
 
 3. compile  
-`csc -gui -O3 -d0 tf2cd.scm`  
+`csc -static -gui -O3 -d0 tf2cd.scm`  
 

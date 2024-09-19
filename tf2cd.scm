@@ -13,6 +13,12 @@
 (import (json-abnf)
 	(pstk))
 
+; TODO clean up the version detection, we already can figure out
+; most of it from the versions.sexp file, no need to do clever
+; evaluation based
+;
+; generalize things for open/pre fortress use
+
 ; NOTE our variable definitions generally go up here,
 ; but for cursed reasons some of them are below, under
 ; the tk gui block, tk is a bitch with passing vars
@@ -160,6 +166,7 @@
 
 ; PROCEDURES!!
 
+; grabbing revtxt is deprecated
 (define (findlatestversion)
   (let ([foo (conc *tempdir* "/" *revtxt*)])
     (if (file-exists? foo)
@@ -179,10 +186,6 @@
     (close-output-port b)))
 
 ; this is fucking cursed.
-; TODO rewrite all of this to be simpler
-; we can set! all of the URL variables by
-; just reading the versions.sexp file, no
-; need to evaluate it based on rev.txt
 (define versiondetectproc
   (lambda ()
     (let ([dir (tk-get-var 'userdir)]
