@@ -25,6 +25,7 @@
 
 (define *downloader* (make-pathname "bin" "aria2c"))
 (define *butler* (make-pathname "bin" "butler"))
+(define *curl* (make-pathname "bin" "curl" "exe"))
 (define *ttccll* (make-pathname "bin" "tclkit"))
 (define *tar* (make-pathname "bin" "tar" "exe"))
 (define *zstd* (make-pathname "bin" "zstd" "exe"))
@@ -167,6 +168,7 @@
 ; PROCEDURES!!
 
 ; grabbing revtxt is deprecated
+; can we maybe read the sexp right from the input port?
 (define (findlatestversion)
   (let ([foo (conc *tempdir* "/" *revtxt*)])
     (if (file-exists? foo)
@@ -179,6 +181,7 @@
     (let ([ver (string->number (read-line (open-input-file (conc *tempdir* "/" *revtxt*))))])
       (set! *latestver* ver))))
 
+; TODO switch to curl downloader
 (define (findlatestversion-get)
   (let-values ([(a b c) (process *downloader* (append *ariaversionargs* (list (conc *slaveurl* *revtxt*))))])
     (display->status a) ; we need to clear the port to close it but we dont want to display it
