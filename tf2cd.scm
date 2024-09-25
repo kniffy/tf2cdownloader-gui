@@ -38,13 +38,19 @@
    (set! *ttccll* (pathname-replace-extension *ttccll* "exe"))
 
    (define *tempdir* (get-environment-variable "TEMP"))
-   (define *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods"))
+   (define *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
+
+   (define *theme* "xpnative")
+   (define *progbarsize* 600))
 
   (linux
     (define *tempdir* (make-absolute-pathname "var" "tmp"))
     (define *defaultdir*
       (let ([user (get-environment-variable "USER")])
-	(make-absolute-pathname (list "home" user ".local" "share" "Steam" "steamapps") "sourcemods")))))
+	(make-absolute-pathname (list "home" user ".local" "share" "Steam" "steamapps") "sourcemods")))
+
+    (define *theme* "clam")
+    (define *progbarsize* 565)))
 
 (define *ariaargs*
   (list
@@ -66,12 +72,10 @@
     "-d"
     *tempdir*))
 
-(define *ariaversionargs*
-  (list "--enable-color=false"
-        "-UTF2CDownloadergui2024-07-10"
-        "--allow-overwrite=true"
-        "-d"
-        *tempdir*))
+;(define *curlargs*
+;  (list "--output-dir"
+;        *tempdir*
+;        "-O"))
 
 ; we append multiple args to some of these later
 (define *unpackargs* (list "-kxv" "-I" *zstd* "-f"))
@@ -83,6 +87,7 @@
 ; this is evaluated out below in the verify procedure
 ;(define butlerverifyargs)
 
+; TODO generalize; support open fortress etc
 ; kind of dumb vars, can clean up our code when we figure out json parsing
 (define *masterurl* "https://wiki.tf2classic.com/kachemak/")
 (define *slaveurl* "http://fastdl.tildas.org/pub/downloader/")
@@ -97,7 +102,7 @@
 ; tk init
 (tk-start *ttccll*)
 (ttk-map-widgets 'all) ; use the ttk widget set
-(ttk/set-theme "clam")
+(ttk/set-theme *theme*)
 (tk/wm 'title tk "tf2cdownloader")
 (tk/wm 'resizable tk 0 0) ; dont let user resize window
 (tk-eval "fconfigure stdin -encoding utf-8") ; ensure utf8 mode
@@ -138,8 +143,10 @@
 		    'state: 'disabled
 		    'command: (lambda () (verifyproc))))
 
+; mind the length setting, the quoting has a knife
 (define prog (tk 'create-widget 'progressbar
-		 'length: 565
+		 'length:
+     *progbarsize*
 		 'maximum: 1
 		 'mode: 'determinate
 		 'orient: 'horizontal
@@ -167,10 +174,14 @@
 
 ; PROCEDURES!!
 
-; grabbing revtxt is deprecated
-; can we maybe read the sexp right from the input port?
 (define (findlatestversion)
-  (let ([foo (conc *tempdir* "/" *revtxt*)])
+  ; stub
+  )
+
+; grabbing revtxt is deprecated
+; can we maybe read the sexp right from the input port? - yes, just merge these into reading from curl's console
+(define (findlatestversion-old)
+  (let ([foo (conc *tempdir* "/" "versions.sexp")])
     (if (file-exists? foo)
       (let* ([filetime (file-modification-time foo)] [differ (- (current-seconds) filetime)])
         (if (> differ 3600)
@@ -178,12 +189,13 @@
 
       (findlatestversion-get))  ; false case of outer if
 
-    (let ([ver (string->number (read-line (open-input-file (conc *tempdir* "/" *revtxt*))))])
-      (set! *latestver* ver))))
+;    (let ([ver (string->number (read-line (open-input-file (conc *tempdir* "/" *revtxt*))))])
+;      (set! *latestver* ver))))
 
-; TODO switch to curl downloader
+))
+
 (define (findlatestversion-get)
-  (let-values ([(a b c) (process *downloader* (append *ariaversionargs* (list (conc *slaveurl* *revtxt*))))])
+  (let-values ([(a b c) (process *curl* (append *curlargs* (list (conc *slaveurl* "versions.sexp"))))])
     (display->status a) ; we need to clear the port to close it but we dont want to display it
     (close-input-port a)
     (close-output-port b)))
