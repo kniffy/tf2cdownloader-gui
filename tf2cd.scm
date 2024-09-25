@@ -146,7 +146,7 @@
 ; mind the length setting, the quoting has a knife
 (define prog (tk 'create-widget 'progressbar
 		 'length:
-     *progbarsize*
+		 *progbarsize*
 		 'maximum: 1
 		 'mode: 'determinate
 		 'orient: 'horizontal
@@ -175,8 +175,14 @@
 ; PROCEDURES!!
 
 (define (findlatestversion)
-  ; stub
-  )
+
+  (let*-values ([(a b c) (process *curl* (list "-s" (conc *slaveurl* "versions.sexp") ) ) ]
+               [(sex) (read-list a)])
+
+               (set! *latestver* (string->number (caar (reverse (caar sex)))))
+
+               (close-input-port a)
+               (close-output-port b)))
 
 ; grabbing revtxt is deprecated
 ; can we maybe read the sexp right from the input port? - yes, just merge these into reading from curl's console
@@ -188,10 +194,8 @@
           (findlatestversion-get)))
 
       (findlatestversion-get))  ; false case of outer if
-
 ;    (let ([ver (string->number (read-line (open-input-file (conc *tempdir* "/" *revtxt*))))])
 ;      (set! *latestver* ver))))
-
 ))
 
 (define (findlatestversion-get)
@@ -201,6 +205,7 @@
     (close-output-port b)))
 
 ; this is fucking cursed.
+; TODO massive simplification
 (define versiondetectproc
   (lambda ()
     (let ([dir (tk-get-var 'userdir)]
