@@ -83,7 +83,7 @@
 (define *masterurl* "https://wiki.tf2classic.com/kachemak/")
 (define *slaveurl* "http://fastdl.tildas.org/pub/downloader/")
 (define *fulltarballurl* 0)
-(define *revtxt* "current") ; deprecated
+;(define *revtxt* "current") ; deprecated
 (define *patchfile* 0)
 (define *healfile* 0)
 (define *currentver*)
@@ -107,8 +107,6 @@
 (tk-var 'progress)
 
 ; widget definitions
-;(define label0 (tk 'create-widget 'label 'text: "sourcemods directory:"))
-
 (define entry (tk 'create-widget 'entry
 		  'textvariable: (tk-var 'userdir)
 		  'width: 55))
@@ -166,59 +164,55 @@
 (entry 'insert 0 "pick a dir :^)")		; we cant put this in the initialization
 
 ; PROCEDURES!!
-
 (define (findlatestversion)
   (let*-values ([(a b c) (process *curl* (list "-s" (conc *slaveurl* "versions.sexp")))])
-
+; TODO what happens when this fails
     (set! *sex* (read-list a))
     (set! *latestver* (string->number (caar (reverse (caar *sex*)))))
-
+    (set! *fulltarballurl* (conc *masterurl* (cdr (assoc "url" (cdr (assoc (number->string *latestver*) (cdr (caar *sex*))))))))
     (close-input-port a)
     (close-output-port b)))
 
 ; this is fucking cursed.
 ; TODO massive simplification
-(define versiondetectproc
-  (lambda ()
-    (let ([dir (tk-get-var 'userdir)]
-	  [file "/tf2classic/rev.txt"] [full ""]
-	  [dotlatestver (string-intersperse (string-chop (number->string *latestver*) 1) ".")])
+(define (versiondetectproc)
 
-      ; we gotta set this to global var to work around glob gremlins in the unpack proc
-      (set! *dotlatestver* dotlatestver)
+  (let ([dir (tk-get-var 'userdir)]
+	[file "/tf2classic/rev.txt"] [full ""]
+	[dotlatestver (string-intersperse (string-chop (number->string *latestver*) 1) ".")])
 
-      (if (file-exists? (conc dir file))
-	(let* ([ver (string->number (read-line (open-input-file (conc dir file))))]
-	       [dotver (string-intersperse (string-chop (number->string ver) 1) ".")])
+    ; we gotta set this to global var to work around glob gremlins in the unpack proc
+    ; do we still need to set this? 20240926
+    (set! *dotlatestver* dotlatestver)
 
-	  (set! *currentver* ver)
-	  (set! *healfile* (conc "tf2classic-" dotver "-heal.zip"))
+    (if (file-exists? (conc dir file))
+      (let* ([ver (string->number (read-line (open-input-file (conc dir file))))]
+	     [dotver (string-intersperse (string-chop (number->string ver) 1) ".")])
 
-	  (unless (= ver *latestver*)
-	    (set! *patchfile* (conc "tf2classic-patch" "-" ver "-" *latestver* ".pwr"))
-	    (set! *fulltarballurl* (conc *masterurl* "tf2classic-" dotlatestver ".meta4"))  ; metalink, not the literal tarball
-	    (set! full *patchfile*))
+	(set! *healfile* (cdr (assoc "heal" (cdr (assoc (number->string *latestver* (cdr (caar *sex*))))))))
 
-	  (begin
-	    (statusstate 1)
-	    (statusbox 'insert 'end "tf2c installation: found\n")
-	    (statusbox 'insert 'end (conc "version " ver " detected\n"))
+	(unless (= ver *latestver*)
+	  (set! *patchfile* (cdr (assoc "url" (cdr (assoc ver (cdr (cadr (car *sex*)))))))))
 
-	    (if [or (< ver 203) (> ver 230)]
-	      (begin  ; true case
-		(statusbox 'insert 'end "malformed version number?\n")))
-
-	    (button2 'configure 'state: 'normal)
-	    (button3 'configure 'state: 'normal)
-	    (statusstate 0)))
-
-	(begin	; else case
+	(begin
 	  (statusstate 1)
-	  (button2 'state 'disabled)
-	  (button3 'state 'disabled)
-	  (set! *fulltarballurl* (conc *masterurl* "tf2classic-" dotlatestver ".meta4"))
-	  (statusbox 'insert 'end "tf2c installation: not found\n")
-	  (statusstate 0))))))
+	  (statusbox 'insert 'end "tf2c installation: found\n")
+	  (statusbox 'insert 'end (conc "version " ver " detected\n"))
+
+	  (if [or (< ver 203) (> ver 230)]
+	    (begin  ; true case
+	      (statusbox 'insert 'end "malformed version number?\n")))
+
+	  (button2 'configure 'state: 'normal)
+	  (button3 'configure 'state: 'normal)
+	  (statusstate 0)))
+
+      (begin	; else case
+	(statusstate 1)
+	(button2 'state 'disabled)
+	(button3 'state 'disabled)
+	(statusbox 'insert 'end "tf2c installation: not found\n")
+	(statusstate 0)))))
 
 (define installproc
   (lambda ()
