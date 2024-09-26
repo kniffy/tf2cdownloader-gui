@@ -176,7 +176,6 @@
 ; this is fucking cursed.
 ; TODO massive simplification
 (define (versiondetectproc)
-
   (let ([dir (tk-get-var 'userdir)]
 	[file "/tf2classic/rev.txt"] [full ""]
 	[dotlatestver (string-intersperse (string-chop (number->string *latestver*) 1) ".")])
@@ -189,10 +188,11 @@
       (let* ([ver (string->number (read-line (open-input-file (conc dir file))))]
 	     [dotver (string-intersperse (string-chop (number->string ver) 1) ".")])
 
-	(set! *healfile* (cdr (assoc "heal" (cdr (assoc (number->string *latestver* (cdr (caar *sex*))))))))
+	(set! *currentver* ver)
+	(set! *healfile* (cdr (assoc "heal" (cdr (assoc (number->string *latestver*) (cdr (caar *sex*)))))))
 
 	(unless (= ver *latestver*)
-	  (set! *patchfile* (cdr (assoc "url" (cdr (assoc ver (cdr (cadr (car *sex*)))))))))
+	  (set! *patchfile* (cdr (assoc "url" (cdr (assoc (number->string ver) (cdr (cadr (car *sex*)))))))))
 
 	(begin
 	  (statusstate 1)
@@ -299,30 +299,29 @@
 ; sig+heal files
 ; eg bin/butler verify https://wiki.tf2classic.com/kachemak/tf2classic214.sig /var/tmp/Q/tf2classic
 ; --heal=archive,https://wiki.tf2classic.com/kachemak/tf2classic-2.1.4-heal.zip
-(define verifyproc
-  (lambda ()
-    (let*-values ([(rid) (tk-get-var 'userdir)]
-		  [(butlerverifyargs)
-		   (list "verify"
-			 (conc *masterurl* "tf2classic" *currentver* ".sig")
-			 (conc rid "/tf2classic")
-			 (conc "--heal=archive," *masterurl* *healfile*)
-			 "--json")])
+(define (verifyproc)
+  (let*-values ([(rid) (tk-get-var 'userdir)]
+		[(butlerverifyargs)
+		 (list "verify"
+		       (conc *masterurl* "tf2classic" *currentver* ".sig")
+		       (conc rid "/tf2classic")
+		       (conc "--heal=archive," *masterurl* *healfile*)
+		       "--json")])
 
-      (let-values ([(a b c d) (process* *butler* butlerverifyargs)])
-	(begin
-	  (buttonstate 0)
-	  (statusstate 1)
-	  (display-json->status a)
-	  (close-input-port a)
-	  (close-output-port b)
-	  (display->status d)
-	  (close-input-port d)
+    (let-values ([(a b c d) (process* *butler* butlerverifyargs)])
+      (begin
+	(buttonstate 0)
+	(statusstate 1)
+	(display-json->status a)
+	(close-input-port a)
+	(close-output-port b)
+	(display->status d)
+	(close-input-port d)
 
-	  (statusbox 'insert 'end "verified?\n")
-	  (tk-set-var! 'progress 1.0)
-	  (statusstate 0)
-	  (buttonstate 1))))))
+	(statusbox 'insert 'end "verified?\n")
+	(tk-set-var! 'progress 1.0)
+	(statusstate 0)
+	(buttonstate 1)))))
 
 ; input is a port, iterates and prints the lines to the status box widget
 ; until it hits EOF - dont forget setting the box's state before/after use
