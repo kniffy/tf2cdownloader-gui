@@ -5,8 +5,8 @@ static beta builds are available on the
 [releases](https://github.com/kniffy/tf2cdownloader-gui/releases) page  
 
 ### notes
-there is currently no checking of free disk space!  
-ensure you have more than enough space  
+there is currently no checking of free disk space, or deletion of temp files!  
+ensure you have more than enough space eg. 20+gb  
 
 ### building
 1. install `chicken`  
