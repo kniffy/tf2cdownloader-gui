@@ -13,12 +13,6 @@
 (import (json-abnf)
 	(pstk))
 
-; TODO clean up the version detection, we already can figure out
-; most of it from the versions.sexp file, no need to do clever
-; evaluation based
-;
-; generalize things for open/pre fortress use
-
 ; NOTE our variable definitions generally go up here,
 ; but for cursed reasons some of them are below, under
 ; the tk gui block, tk is a bitch with passing vars
@@ -164,9 +158,10 @@
 (entry 'insert 0 "pick a dir :^)")		; we cant put this in the initialization
 
 ; PROCEDURES!!
+; TODO handle error case,
+; and do as much setting of variables as possible in here
 (define (findlatestversion)
   (let*-values ([(a b c) (process *curl* (list "-s" (conc *slaveurl* "versions.sexp")))])
-; TODO what happens when this fails
     (set! *sex* (read-list a))
     (set! *latestver* (string->number (caar (reverse (caar *sex*)))))
     (set! *fulltarballurl* (conc *masterurl* (cdr (assoc "url" (cdr (assoc (number->string *latestver*) (cdr (caar *sex*))))))))
@@ -174,7 +169,7 @@
     (close-output-port b)))
 
 ; this is fucking cursed.
-; TODO massive simplification
+; we didnt exactly simplify this..
 (define (versiondetectproc)
   (let ([dir (tk-get-var 'userdir)]
 	[file "/tf2classic/rev.txt"] [full ""]
