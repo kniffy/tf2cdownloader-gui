@@ -68,7 +68,7 @@
     *tempdir*))
 
 ; we append multiple args to some of these later
-(define *unpackargs* (list "-kxv" "-I" *zstd* "-f"))
+(define *unpackargs* (list "-xv" "-I" *zstd* "-f"))
 
 (define *butlerpatchargs*
   (list "apply"
