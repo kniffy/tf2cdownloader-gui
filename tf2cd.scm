@@ -35,7 +35,7 @@
    (define *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
 
    (define *theme* "xpnative")
-   (define *progbarsize* 600))
+   (define *progbarsize* 645))
 
   (linux
     (define *tempdir* (make-absolute-pathname "var" "tmp"))
