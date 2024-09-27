@@ -112,10 +112,12 @@
 				 (begin
 				   (tk-set-var! 'userdir cd)
 				   (findlatestversion)
-				   (versiondetectproc))))))
+				   (versiondetectproc)
+				   (button1 'configure 'state: 'normal))))))
 
 (define button1 (tk 'create-widget 'button
 		    'text: "New Install"
+		    'state: 'disabled
 		    'command: (lambda () (installproc))))
 
 (define button2 (tk 'create-widget 'button
