@@ -17,9 +17,9 @@
 ; but for cursed reasons some of them are below, under
 ; the tk gui block, tk is a bitch with passing vars
 
-(define *downloader* (make-pathname "bin" "aria2c"))
+;(define *downloader* (make-pathname "bin" "aria2c"))
 (define *butler* (make-pathname "bin" "butler"))
-(define *curl* (make-pathname "bin" "curl" "exe"))
+(define *curl* (make-pathname "bin" "curl"))
 (define *ttccll* (make-pathname "bin" "tclkit"))
 (define *tar* (make-pathname "bin" "tar" "exe"))
 (define *zstd* (make-pathname "bin" "zstd" "exe"))
@@ -27,9 +27,9 @@
 ; set some platform-specific stuff
 (cond-expand
   (windows
-   (set! *downloader* (pathname-replace-extension *downloader* "exe"))
+;   (set! *downloader* (pathname-replace-extension *downloader* "exe"))
    (set! *butler* (pathname-replace-extension *butler* "exe"))
-   (set! *curl* "curl.exe") ; built in curl will be replaced with http3 curl
+   (set! *curl* (pathname-replace-extension *curl* "exe"))
    (set! *ttccll* (pathname-replace-extension *ttccll* "exe"))
 
    (define *tempdir* (get-environment-variable "TEMP"))
@@ -47,25 +47,36 @@
     (define *theme* "clam")
     (define *progbarsize* 565)))
 
-(define *ariaargs*
+;(define *ariaargs*
+;  (list
+;    "--enable-color=false"
+;    "-x 16"
+;    "-UTF2CDownloadergui2024-09-25"
+;    "--allow-piece-length-change=true"
+;    "-j 16"
+;    "--optimize-concurrent-downloads=true"
+;    "--check-certificate=false"
+;    "-V"
+;    "--auto-file-renaming=false"
+;    "-c"
+;    "--allow-overwrite=true"
+;    "--console-log-level=error"
+;    "--summary-interval=5"
+;    "--bt-hash-check-seed=false"
+;    "--seed-time=0"
+;    "-d"
+;    *tempdir*))
+(define *curlargs*
   (list
-    "--enable-color=false"
-    "-x 16"
-    "-UTF2CDownloadergui2024-09-25"
-    "--allow-piece-length-change=true"
-    "-j 16"
-    "--optimize-concurrent-downloads=true"
-    "--check-certificate=false"
-    "-V"
-    "--auto-file-renaming=false"
-    "-c"
-    "--allow-overwrite=true"
-    "--console-log-level=error"
-    "--summary-interval=5"
-    "--bt-hash-check-seed=false"
-    "--seed-time=0"
-    "-d"
-    *tempdir*))
+;   "-#"
+   "-A tf2cd-gui20241001"
+   "-C" "-"
+   "-O"
+   "--output-dir"
+   *tempdir*
+   ;"--http3-only"
+   "--stderr" "-"
+   ))
 
 ; we append multiple args to some of these later
 (define *unpackargs* (list "-xv" "-I" *zstd* "-f"))
@@ -76,7 +87,7 @@
 
 ; TODO generalize; support open fortress etc
 (define *masterurl* "https://wiki.tf2classic.com/kachemak/")
-(define *slaveurl* "http://fastdl.tildas.org/pub/downloader/")
+(define *slaveurl* "https://file.tildas.org/pub/tf2classic/")
 (define *fulltarballurl* 0)
 ;(define *revtxt* "current") ; deprecated
 (define *patchfile* 0)
@@ -167,7 +178,7 @@
   (let*-values ([(a b c) (process *curl* (list "-s" (conc *slaveurl* "versions.sexp")))])
     (set! *sex* (read-list a))
     (set! *latestver* (string->number (caar (reverse (caar *sex*)))))
-    (set! *fulltarballurl* (conc *masterurl* (cdr (assoc "url" (cdr (assoc (number->string *latestver*) (cdr (caar *sex*))))))))
+    (set! *fulltarballurl* (conc *slaveurl* (cdr (assoc "file" (cdr (assoc (number->string *latestver*) (cdr (caar *sex*))))))))
     (close-input-port a)
     (close-output-port b)))
 
@@ -214,7 +225,7 @@
 
 (define installproc
   (lambda ()
-    (let*-values ([(rid) (tk-get-var 'userdir)] [(a b c) (process *downloader* (append *ariaargs* (list *fulltarballurl*)))])
+    (let*-values ([(rid) (tk-get-var 'userdir)] [(a b c) (process *curl* (append *curlargs* (list *fulltarballurl*)))])
       (begin
 	(buttonstate 0)
 	(statusstate 1)
@@ -250,7 +261,7 @@
     (if (not (= *currentver* *latestver*))
       (if (string? *patchfile*)
 	(let*-values ([(rid) (tk-get-var 'userdir)]
-		      [(a b c) (process *downloader* (append *ariaargs* (list (conc *masterurl* *patchfile*))))])
+		      [(a b c) (process *curl* (append *curlargs* (list (conc *masterurl* *patchfile*))))])
 	  (begin
 	    (buttonstate 0)
 	    (statusstate 1)
