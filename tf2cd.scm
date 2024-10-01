@@ -15,7 +15,6 @@
 ; but for cursed reasons some of them are below, under
 ; the tk gui block, tk is a bitch with passing vars
 
-;(define *downloader* (make-pathname "bin" "aria2c"))
 (define *butler* (make-pathname "bin" "butler"))
 (define *curl* (make-pathname "bin" "curl")) ; vendored curl for http3
 (define *tar* "tar")
@@ -24,16 +23,15 @@
 ; set some platform-specific stuff
 (cond-expand
   (windows
-;    (set! *downloader* (pathname-replace-extension *downloader* "exe"))
-    (set! *butler* (pathname-replace-extension *butler* "exe"))
-    (set! *curl* (pathname-replace-extension *curl* "exe"))
-    (set! *ttccll* (pathname-replace-extension *ttccll* "exe"))
+   (set! *butler* (pathname-replace-extension *butler* "exe"))
+   (set! *curl* (pathname-replace-extension *curl* "exe"))
+   (set! *ttccll* (pathname-replace-extension *ttccll* "exe"))
 
-    (define *tempdir* (get-environment-variable "TEMP"))
-    (define *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
+   (define *tempdir* (get-environment-variable "TEMP"))
+   (define *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
 
-    (define *theme* "xpnative")
-    (define *progbarsize* 645))
+   (define *theme* "xpnative")
+   (define *progbarsize* 645))
 
   (linux
     (define *tempdir* (make-absolute-pathname "var" "tmp"))
@@ -46,15 +44,13 @@
 
 (define *curlargs*
   (list
-;    "-#"
     "-A tf2cd-gui20241001"
     "-C" "-"
     "-O"
     "--output-dir"
     *tempdir*
-    ;"--http3-only"
-    "--stderr" "-"
-    ))
+    "--http3-only"
+    "--stderr" "-"))
 
 ; we append multiple args to some of these later
 (define *unpackargs* (list "-xvf"))
