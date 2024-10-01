@@ -51,8 +51,8 @@
     *tempdir*
     "--http3-only"
     "--stderr" "-"
-    "--retry 20"
-    "--retry-max-time 4"))
+    "--retry" "20"
+    "--retry-max-time" "4"))
 
 ; we append multiple args to some of these later
 (define *unpackargs* (list "-xvf"))
