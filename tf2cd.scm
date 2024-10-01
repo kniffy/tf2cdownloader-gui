@@ -17,7 +17,6 @@
 ; but for cursed reasons some of them are below, under
 ; the tk gui block, tk is a bitch with passing vars
 
-;(define *downloader* (make-pathname "bin" "aria2c"))
 (define *butler* (make-pathname "bin" "butler"))
 (define *curl* (make-pathname "bin" "curl"))
 (define *ttccll* (make-pathname "bin" "tclkit"))
@@ -27,7 +26,6 @@
 ; set some platform-specific stuff
 (cond-expand
   (windows
-;   (set! *downloader* (pathname-replace-extension *downloader* "exe"))
    (set! *butler* (pathname-replace-extension *butler* "exe"))
    (set! *curl* (pathname-replace-extension *curl* "exe"))
    (set! *ttccll* (pathname-replace-extension *ttccll* "exe"))
@@ -47,36 +45,15 @@
     (define *theme* "clam")
     (define *progbarsize* 565)))
 
-;(define *ariaargs*
-;  (list
-;    "--enable-color=false"
-;    "-x 16"
-;    "-UTF2CDownloadergui2024-09-25"
-;    "--allow-piece-length-change=true"
-;    "-j 16"
-;    "--optimize-concurrent-downloads=true"
-;    "--check-certificate=false"
-;    "-V"
-;    "--auto-file-renaming=false"
-;    "-c"
-;    "--allow-overwrite=true"
-;    "--console-log-level=error"
-;    "--summary-interval=5"
-;    "--bt-hash-check-seed=false"
-;    "--seed-time=0"
-;    "-d"
-;    *tempdir*))
 (define *curlargs*
   (list
-;   "-#"
-   "-A tf2cd-gui20241001"
-   "-C" "-"
-   "-O"
-   "--output-dir"
-   *tempdir*
-   ;"--http3-only"
-   "--stderr" "-"
-   ))
+    "-A tf2cd-gui20241001"
+    "-C" "-"
+    "-O"
+    "--output-dir"
+    *tempdir*
+    "--http3-only"
+    "--stderr" "-"))
 
 ; we append multiple args to some of these later
 (define *unpackargs* (list "-xv" "-I" *zstd* "-f"))
