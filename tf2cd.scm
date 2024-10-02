@@ -52,7 +52,7 @@
     "-O"
     "--output-dir"
     *tempdir*
-    "--http3-only"
+    "--http3"
     "--stderr" "-"
     "--retry" "20"
     "--retry-max-time" "4"))
@@ -154,7 +154,7 @@
 ; TODO handle error case,
 ; and do as much setting of variables as possible in here
 (define (findlatestversion)
-  (let*-values ([(a b c) (process *curl* (list "-s" (conc *slaveurl* "versions.sexp")))])
+  (let*-values ([(a b c) (process *curl* (list "-s" "--http3" (conc *slaveurl* "versions.sexp")))])
     (set! *sex* (read-list a))
     (set! *latestver* (string->number (caar (reverse (caar *sex*)))))
     (set! *fulltarballurl* (conc *slaveurl* (cdr (assoc "file" (cdr (assoc (number->string *latestver*) (cdr (caar *sex*))))))))
