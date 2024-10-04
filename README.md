@@ -5,6 +5,9 @@ static beta builds are available on the
 [releases](https://github.com/kniffy/tf2cdownloader-gui/releases) page  
 
 ### notes
+for users still on version 2.1.4, you may need to edit `rev.txt` to contain `214`  
+it was left as `213` by mistake..  
+
 there is currently no checking of free disk space, or deletion of temp files!  
 ensure you have more than enough space eg. 20+gb  
 
