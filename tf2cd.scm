@@ -7,8 +7,7 @@
 	(chicken process)
 	(chicken process-context)
 	(chicken platform)
-	(chicken string)
-	(chicken time))
+	(chicken string))
 
 (import (json-abnf)
 	(pstk))
@@ -19,10 +18,10 @@
 
 (define *downloader* (make-pathname "bin" "aria2c"))
 (define *butler* (make-pathname "bin" "butler"))
-(define *curl* (make-pathname "bin" "curl" "exe"))
+(define *curl* (make-pathname "bin" "curl")) ; vendored curl for http3
+(define *tar* "tar")
 (define *ttccll* (make-pathname "bin" "tclkit"))
-(define *tar* (make-pathname "bin" "tar" "exe"))
-(define *zstd* (make-pathname "bin" "zstd" "exe"))
+;(define *zstd* (make-pathname "bin" "zstd" "exe")) ; make users install this
 
 ; set some platform-specific stuff
 (cond-expand
@@ -51,7 +50,7 @@
   (list
     "--enable-color=false"
     "-x 16"
-    "-UTF2CDownloadergui2024-09-25"
+    "-UTF2CDownloadergui2024-10-04"
     "--allow-piece-length-change=true"
     "-j 16"
     "--optimize-concurrent-downloads=true"
@@ -68,7 +67,7 @@
     *tempdir*))
 
 ; we append multiple args to some of these later
-(define *unpackargs* (list "-xv" "-I" *zstd* "-f"))
+(define *unpackargs* (list "-xvf"))
 
 (define *butlerpatchargs*
   (list "apply"
@@ -76,7 +75,7 @@
 
 ; TODO generalize; support open fortress etc
 (define *masterurl* "https://wiki.tf2classic.com/kachemak/")
-(define *slaveurl* "http://fastdl.tildas.org/pub/downloader/")
+(define *slaveurl* "https://file.tildas.org/pub/tf2classic/")
 (define *fulltarballurl* 0)
 ;(define *revtxt* "current") ; deprecated
 (define *patchfile* 0)
