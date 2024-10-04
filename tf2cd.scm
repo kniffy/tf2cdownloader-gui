@@ -1,12 +1,12 @@
 (import (chicken file)
-	(chicken file posix)
-	(chicken format)
+	;(chicken file posix)
+	;(chicken format)
 	(chicken io)
 	(chicken pathname)
 	(chicken port)
 	(chicken process)
 	(chicken process-context)
-	(chicken platform)
+	;(chicken platform)
 	(chicken string))
 
 (import (json-abnf)
@@ -21,7 +21,6 @@
 (define *curl* (make-pathname "bin" "curl")) ; vendored curl for http3
 (define *tar* "tar")
 (define *ttccll* (make-pathname "bin" "tclkit"))
-;(define *zstd* (make-pathname "bin" "zstd" "exe")) ; make users install this
 
 ; set some platform-specific stuff
 (cond-expand
@@ -148,7 +147,6 @@
 
 ; actually drawing the window and placing positions
 ; for readability, keep the same order as definitions
-;(tk/grid label0 'row: 0 'column: 0 'pady: 10)
 (tk/grid entry 'row: 1 'column: 0 'columnspan: 3 'padx: 20 'pady: 20)
 (tk/grid button0 'row: 1 'column: 3 'padx: 10)		; browse
 (tk/grid button1 'row: 4 'column: 0 'pady: 10)		; install
@@ -186,7 +184,7 @@
 	     [dotver (string-intersperse (string-chop (number->string ver) 1) ".")])
 
 	(set! *currentver* ver)
-	(set! *healfile* (cdr (assoc "heal" (cdr (assoc (number->string *latestver*) (cdr (caar *sex*)))))))
+	(set! *healfile* (cdr (assoc "heal" (cdr (assoc (number->string ver) (cdr (caar *sex*)))))))
 
 	(unless (= ver *latestver*)
 	  (set! *patchfile* (cdr (assoc "url" (cdr (assoc (number->string ver) (cdr (cadr (car *sex*)))))))))
