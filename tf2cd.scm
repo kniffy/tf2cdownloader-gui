@@ -27,7 +27,7 @@
   (windows
    (set! *downloader* (pathname-replace-extension *downloader* "exe"))
    (set! *butler* (pathname-replace-extension *butler* "exe"))
-   (set! *curl* "curl.exe") ; built in curl will be replaced with http3 curl
+   (set! *curl* (pathname-replace-extention *curl* "exe"))
    (set! *ttccll* (pathname-replace-extension *ttccll* "exe"))
 
    (define *tempdir* (get-environment-variable "TEMP"))
