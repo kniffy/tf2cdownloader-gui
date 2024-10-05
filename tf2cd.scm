@@ -27,7 +27,7 @@
   (windows
    (set! *downloader* (pathname-replace-extension *downloader* "exe"))
    (set! *butler* (pathname-replace-extension *butler* "exe"))
-   (set! *curl* (pathname-replace-extention *curl* "exe"))
+   (set! *curl* (pathname-replace-extension *curl* "exe"))
    (set! *ttccll* (pathname-replace-extension *ttccll* "exe"))
 
    (define *tempdir* (get-environment-variable "TEMP"))
