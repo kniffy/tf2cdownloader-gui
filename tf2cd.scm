@@ -1,12 +1,9 @@
 (import (chicken file)
-	;(chicken file posix)
-	;(chicken format)
 	(chicken io)
 	(chicken pathname)
 	(chicken port)
 	(chicken process)
 	(chicken process-context)
-	;(chicken platform)
 	(chicken string))
 
 (import (json-abnf)
@@ -49,7 +46,7 @@
   (list
     "--enable-color=false"
     "-x 16"
-    "-UTF2CDownloadergui2024-10-04"
+    "-UTF2CDownloadergui2024-10-20"
     "--allow-piece-length-change=true"
     "-j 16"
     "--optimize-concurrent-downloads=true"
@@ -209,8 +206,7 @@
 	(statusbox 'insert 'end "tf2c installation: not found\n")
 	(statusstate 0)))))
 
-(define installproc
-  (lambda ()
+(define (installproc)
     (let*-values ([(rid) (tk-get-var 'userdir)] [(a b c) (process *downloader* (append *ariaargs* (list *fulltarballurl*)))])
       (begin
 	(buttonstate 0)
@@ -230,17 +226,25 @@
 	(set! *unpackargs* (append *unpackargs* (list (conc *tempdir* "/tf2classic-" *dotlatestver* ".tar.zst"))))
 
 	(let-values ([(d e f g) (process* *tar* (append *unpackargs* (list "-C" rid)))])
-	  (display->status d)
-	  (statusbox 'insert 'end "\n")
-	  (sleep 2)
-	  (display->status g)
+	  (cond-expand
+	    (windows
+	      (display->status g)
+	      (display->status d))
+
+	    (linux
+	      (display->status d)
+	      (display->status g)))
+
+;	  (statusbox 'insert 'end "\n")
+;	  (sleep 2)
+;	  (display->status g)
 	  (close-input-port d)
 	  (close-output-port e)
 	  (close-input-port g)
 	  (statusbox 'insert 'end "\n Unpacked!\n")
 	  (statusbox 'see 'end))
 
-	(statusstate 0)))))
+	(statusstate 0))))
 
 (define upgradeproc
   (lambda ()
