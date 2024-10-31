@@ -46,7 +46,7 @@
   (list
     "--enable-color=false"
     "-x 16"
-    "-UTF2CDownloadergui2024-10-20"
+    "-UTF2CDownloadergui2024-11-01"
     "--allow-piece-length-change=true"
     "-j 16"
     "--optimize-concurrent-downloads=true"
@@ -86,7 +86,7 @@
 (tk-start *ttccll*)
 (ttk-map-widgets 'all) ; use the ttk widget set
 (ttk/set-theme *theme*)
-(tk/wm 'title tk "tf2cdownloader")
+(tk/wm 'title tk "tf2classic downloader")
 (tk/wm 'resizable tk 0 0) ; dont let user resize window
 (tk-eval "fconfigure stdin -encoding utf-8") ; ensure utf8 mode
 (tk-eval "fconfigure stdout -encoding utf-8")
