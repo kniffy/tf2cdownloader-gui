@@ -46,7 +46,7 @@
   (list
     "--enable-color=false"
     "-x 16"
-    "-UTF2CDownloadergui2024-11-01"
+    "-UTF2CDownloadergui2024-11-24"
     "--allow-piece-length-change=true"
     "-j 16"
     "--optimize-concurrent-downloads=true"
@@ -108,8 +108,7 @@
 				 (begin
 				   (tk-set-var! 'userdir cd)
 				   (findlatestversion)
-				   (versiondetectproc)
-				   (button1 'configure 'state: 'normal))))))
+				   (versiondetectproc))))))
 
 (define button1 (tk 'create-widget 'button
 		    'text: "New Install"
@@ -168,83 +167,89 @@
 ; this is fucking cursed.
 ; we didnt exactly simplify this..
 (define (versiondetectproc)
-  (let ([dir (tk-get-var 'userdir)]
-	[file "/tf2classic/rev.txt"] [full ""]
-	[dotlatestver (string-intersperse (string-chop (number->string *latestver*) 1) ".")])
+  ; if the user doesnt select a dir, the userdir var is the empty string
+  (if (zero? (string-length (tk-get-var 'userdir)))
+    (display "erm what the sigma")
+    (let ([dir (tk-get-var 'userdir)]	; else case
+	  [file "/tf2classic/rev.txt"] [full ""]
+	  [dotlatestver (string-intersperse (string-chop (number->string *latestver*) 1) ".")])
 
-    ; we gotta set this to global var to work around glob gremlins in the unpack proc
-    ; do we still need to set this? 20240926
-    (set! *dotlatestver* dotlatestver)
+      ; we gotta set this to global var to work around glob gremlins in the unpack proc
+      ; do we still need to set this? 20240926
+      (set! *dotlatestver* dotlatestver)
 
-    (if (file-exists? (conc dir file))
-      (let* ([ver (string->number (read-line (open-input-file (conc dir file))))]
-	     [dotver (string-intersperse (string-chop (number->string ver) 1) ".")])
+      (if (file-exists? (conc dir file))
+	(let* ([ver (string->number (read-line (open-input-file (conc dir file))))]
+	       [dotver (string-intersperse (string-chop (number->string ver) 1) ".")])
 
-	(set! *currentver* ver)
-	(set! *healfile* (cdr (assoc "heal" (cdr (assoc (number->string ver) (cdr (caar *sex*)))))))
+	  (set! *currentver* ver)
+	  (set! *healfile* (cdr (assoc "heal" (cdr (assoc (number->string ver) (cdr (caar *sex*)))))))
 
-	(unless (= ver *latestver*)
-	  (set! *patchfile* (cdr (assoc "url" (cdr (assoc (number->string ver) (cdr (cadr (car *sex*)))))))))
+	  (unless (= ver *latestver*)
+	    (set! *patchfile* (cdr (assoc "url" (cdr (assoc (number->string ver) (cdr (cadr (car *sex*)))))))))
 
-	(begin
+	  (begin
+	    (statusstate 1)
+	    (statusbox 'insert 'end "tf2c installation: found\n")
+	    (statusbox 'insert 'end (conc "version " ver " detected\n"))
+
+
+	    (if [or (< ver 203) (> ver 230)]
+	      (begin  ; true case
+		(statusbox 'insert 'end "malformed version number?\n")))
+
+	    (button2 'configure 'state: 'normal)
+	    (button3 'configure 'state: 'normal)
+	    (statusstate 0)))
+
+	(begin	; else case
 	  (statusstate 1)
-	  (statusbox 'insert 'end "tf2c installation: found\n")
-	  (statusbox 'insert 'end (conc "version " ver " detected\n"))
+	  (button2 'state 'disabled)
+	  (button3 'state 'disabled)
+	  (statusbox 'insert 'end "tf2c installation: not found\n")
 
-	  (if [or (< ver 203) (> ver 230)]
-	    (begin  ; true case
-	      (statusbox 'insert 'end "malformed version number?\n")))
-
-	  (button2 'configure 'state: 'normal)
-	  (button3 'configure 'state: 'normal)
-	  (statusstate 0)))
-
-      (begin	; else case
-	(statusstate 1)
-	(button2 'state 'disabled)
-	(button3 'state 'disabled)
-	(statusbox 'insert 'end "tf2c installation: not found\n")
-	(statusstate 0)))))
+	  (button1 'configure 'state: 'normal)
+	  (statusstate 0))))))
 
 (define (installproc)
-    (let*-values ([(rid) (tk-get-var 'userdir)] [(a b c) (process *downloader* (append *ariaargs* (list *fulltarballurl*)))])
-      (begin
-	(buttonstate 0)
-	(statusstate 1)
-	(statusstate 2)
-	(display->status a)   ; print the process's console
-	(close-input-port a)
-	(close-output-port b)	; we must close ports to exit subprocess
+  (let*-values ([(rid) (tk-get-var 'userdir)] [(a b c) (process *downloader* (append *ariaargs* (list *fulltarballurl*)))])
+    (begin
+      (buttonstate 0)
+      (statusstate 1)
+      (statusstate 2)
+      (zprint a)   ; print the process's console
+      (close-input-port a)
+      (close-output-port b)	; we must close ports to exit subprocess
 
-	(sleep 5)
+      (sleep 5)
 
-	; fuck it we ball (unpack)
-	(statusbox 'insert 'end "Unpacking.. \n")
+      ; fuck it we ball (unpack)
+      (statusbox 'insert 'end "Unpacking.. \n")
 
-	; we know the latest version already, so just append to the args list
-	; no need to worry about users cleaning up first :^)
-	(set! *unpackargs* (append *unpackargs* (list (conc *tempdir* "/tf2classic-" *dotlatestver* ".tar.zst"))))
+      ; we know the latest version already, so just append to the args list
+      ; no need to worry about users cleaning up first :^)
+      (set! *unpackargs* (append *unpackargs* (list (conc *tempdir* "/tf2classic-" *dotlatestver* ".tar.zst"))))
 
-	(let-values ([(d e f g) (process* *tar* (append *unpackargs* (list "-C" rid)))])
-	  (cond-expand
-	    (windows
-	      (display->status g)
-	      (display->status d))
+      (let-values ([(d e f g) (process* *tar* (append *unpackargs* (list "-C" rid)))])
+	(cond-expand
+	  (windows
+	    (zprint g)
+	    (zprint d))
 
-	    (linux
-	      (display->status d)
-	      (display->status g)))
+	  (linux
+	    (zprint d)
+	    (zprint g)))
 
-;	  (statusbox 'insert 'end "\n")
-;	  (sleep 2)
-;	  (display->status g)
-	  (close-input-port d)
-	  (close-output-port e)
-	  (close-input-port g)
-	  (statusbox 'insert 'end "\n Unpacked!\n")
-	  (statusbox 'see 'end))
+	;(statusbox 'insert 'end "\n")
+	;(sleep 2)
+	;(zprint g)
+	(close-input-port d)
+	(close-output-port e)
+	(close-input-port g)
+	(statusbox 'insert 'end "\n Unpacked!\n")
+	(statusbox 'see 'end))
 
-	(statusstate 0))))
+      (statusstate 0))))
 
 (define upgradeproc
   (lambda ()
@@ -256,7 +261,7 @@
 	    (buttonstate 0)
 	    (statusstate 1)
 	    (statusstate 2)
-	    (display->status a)
+	    (zprint a)
 	    (close-input-port a)
 	    (close-output-port b)
 
@@ -274,8 +279,8 @@
 			  [(x y z e) (process* *butler* (append *butlerpatchargs* (list patchpath tf2cdir)))])
 	      (begin
 		(statusbox 'insert 'end "applying patch..\n")
-		(display->status x)
-		(display->status e)
+		(zprint x)
+		(zprint e)
 		(close-input-port x)
 		(close-output-port y)
 		(close-input-port e)))
@@ -311,10 +316,10 @@
       (begin
 	(buttonstate 0)
 	(statusstate 1)
-	(display-json->status a)
+	(zprogress a)
 	(close-input-port a)
 	(close-output-port b)
-	(display->status d)
+	(zprint d)
 	(close-input-port d)
 
 	(statusbox 'insert 'end "verified?\n")
@@ -324,29 +329,30 @@
 
 ; input is a port, iterates and prints the lines to the status box widget
 ; until it hits EOF - dont forget setting the box's state before/after use
-(define (display->status p)
+(define (zprint p)
   (with-input-from-port p
     (lambda ()
       (port-for-each
-        (lambda (word)
-          (statusbox 'insert 'end (conc word "\n"))
-          (statusbox 'see 'end))
+	(lambda (word)
+	  (statusbox 'insert 'end (conc word "\n"))
+	  (statusbox 'see 'end))
 
-      read-line))))
+	read-line))))
 
-(define (display-json->status p)
+; we hate json in this house
+(define (zprogress p)
   (with-input-from-port p
     (lambda ()
       (port-for-each
        (lambda (word)
          (let ([json-foo (parser word)])
            (when (assoc "progress" json-foo)
-             (progress-set! json-foo))))
+             (zprogress-set! json-foo))))
 
        read-line))))
 
-; helper for display->status, not a general procedure
-(define (progress-set! z)
+; helper for zprogress, not a general procedure
+(define (zprogress-set! z)
   (when (assoc "progress" z)
     (tk-set-var! 'progress (cdr (assoc "progress" z)))))
 
