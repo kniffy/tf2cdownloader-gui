@@ -70,17 +70,18 @@
 	(conc "--staging-dir=" (conc *tempdir* "/staging"))))
 
 ; TODO generalize; support open fortress etc
+; '() means null, resist the urge to touch them
 (define *masterurl* "https://wiki.tf2classic.com/kachemak/")
 (define *slaveurl* "https://file.tildas.org/pub/tf2classic/")
-(define *fulltarballurl* 0)
+(define *fulltarballurl* '())
 ;(define *revtxt* "current") ; deprecated
-(define *patchfile* 0)
-(define *healfile* 0)
-(define *currentver*)
-(define *latestver*)
-(define *dotlatestver*)
+(define *patchfile* '())
+(define *healfile* '())
+(define *currentver* '())
+(define *latestver* '())
+(define *dotlatestver* '())
 
-(define *sex*) ; whole parsed versions.json
+(define *sex* '()) ; whole parsed versions.json
 
 ; tk init
 (tk-start *ttccll*)
@@ -93,7 +94,7 @@
 
 ; TK VARS! we gotta define them like this
 (tk-var 'userdir)
-(tk-var 'selectedversion)
+;(tk-var 'selectedversion) ; we never used this? am i dumb??
 (tk-var 'progress)
 
 ; widget definitions
@@ -157,12 +158,13 @@
 ; TODO handle error case,
 ; and do as much setting of variables as possible in here
 (define (findlatestversion)
-  (let*-values ([(a b c) (process *curl* (list "-s" (conc *slaveurl* "versions.sexp")))])
-    (set! *sex* (read-list a))
-    (set! *latestver* (string->number (caar (reverse (caar *sex*)))))
-    (set! *fulltarballurl* (conc *masterurl* (cdr (assoc "url" (cdr (assoc (number->string *latestver*) (cdr (caar *sex*))))))))
-    (close-input-port a)
-    (close-output-port b)))
+  (if (null? *sex*))
+    (let*-values ([(a b c) (process *curl* (list "-s" (conc *slaveurl* "versions.sexp")))])
+      (set! *sex* (read-list a))
+      (set! *latestver* (string->number (caar (reverse (caar *sex*)))))
+      (set! *fulltarballurl* (conc *masterurl* (cdr (assoc "url" (cdr (assoc (number->string *latestver*) (cdr (caar *sex*))))))))
+      (close-input-port a)
+      (close-output-port b)))
 
 ; this is fucking cursed.
 ; we didnt exactly simplify this..
@@ -252,7 +254,7 @@
 
 (define (upgradeproc)
   (if (not (= *currentver* *latestver*))
-    (if (string? *patchfile*)
+    (if (not (null? *patchfile*))
       (let*-values ([(rid) (tk-get-var 'userdir)]
 		    [(a b c) (process *downloader* (append *ariaargs* (list (conc *masterurl* *patchfile*))))])
 	(begin
