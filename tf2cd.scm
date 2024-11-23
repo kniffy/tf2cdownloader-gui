@@ -169,7 +169,7 @@
 (define (versiondetectproc)
   ; if the user doesnt select a dir, the userdir var is the empty string
   (if (not (zero? (string-length (tk-get-var 'userdir))))
-    (let ([dir (tk-get-var 'userdir)]	; else case
+    (let ([dir (tk-get-var 'userdir)]
 	  [file "/tf2classic/rev.txt"] [full ""]
 	  [dotlatestver (string-intersperse (string-chop (number->string *latestver*) 1) ".")])
 
@@ -250,52 +250,52 @@
 
       (statusstate 0))))
 
-(define upgradeproc
-  (lambda ()
-    (if (not (= *currentver* *latestver*))
-      (if (string? *patchfile*)
-	(let*-values ([(rid) (tk-get-var 'userdir)]
-		      [(a b c) (process *downloader* (append *ariaargs* (list (conc *masterurl* *patchfile*))))])
-	  (begin
-	    (buttonstate 0)
-	    (statusstate 1)
-	    (statusstate 2)
-	    (zprint a)
-	    (close-input-port a)
-	    (close-output-port b)
-
-	    (statusbox 'insert 'end "verifying before patching..\n")
-	    (sleep 5)
-	    (verifyproc)
-	    (buttonstate 0) ; verify proc sets these off, we still need it here
-	    (statusstate 1)
-
-	    ; now we set up wot butler will do
-	    (create-directory (conc *tempdir* "/staging"))  ; does butler need this? we copy reference behavior
-
-	    (let*-values ([(tf2cdir) (conc rid "/tf2classic")]
-			  [(patchpath) (conc *tempdir* "/" *patchfile*)]
-			  [(x y z e) (process* *butler* (append *butlerpatchargs* (list patchpath tf2cdir)))])
-	      (begin
-		(statusbox 'insert 'end "applying patch..\n")
-		(zprint x)
-		(zprint e)
-		(close-input-port x)
-		(close-output-port y)
-		(close-input-port e)))
-
-	    (statusstate 0)
-	    (buttonstate 1)))
-
+(define (upgradeproc)
+  (if (not (= *currentver* *latestver*))
+    (if (string? *patchfile*)
+      (let*-values ([(rid) (tk-get-var 'userdir)]
+		    [(a b c) (process *downloader* (append *ariaargs* (list (conc *masterurl* *patchfile*))))])
 	(begin
+	  (buttonstate 0)
 	  (statusstate 1)
-	  (statusbox 'insert 'end "patchfile is null?\n")
-	  (statusstate 0)))
+	  (statusstate 2)
+	  (zprint a)
+	  (close-input-port a)
+	  (close-output-port b)
 
-      (begin	; outermost if, when at latest version
+	  (statusbox 'insert 'end "verifying before patching..\n")
+
+	  (sleep 5)
+	  (verifyproc)
+	  (buttonstate 0) ; verify proc sets these off, we still need it here
+	  (statusstate 1)
+
+	  ; now we set up wot butler will do
+	  (create-directory (conc *tempdir* "/staging"))  ; does butler need this? we copy reference behavior
+
+	  (let*-values ([(tf2cdir) (conc rid "/tf2classic")]
+			[(patchpath) (conc *tempdir* "/" *patchfile*)]
+			[(x y z e) (process* *butler* (append *butlerpatchargs* (list patchpath tf2cdir)))])
+	    (begin
+	      (statusbox 'insert 'end "applying patch..\n")
+	      (zprint x)
+	      (zprint e)
+	      (close-input-port x)
+	      (close-output-port y)
+	      (close-input-port e)))
+
+	  (statusstate 0)
+	  (buttonstate 1)))
+
+      (begin
 	(statusstate 1)
-	(statusbox 'insert 'end "tf2c at latest version!\n")
-	(statusstate 0)))))
+	(statusbox 'insert 'end "patchfile is null?\n")
+	(statusstate 0)))
+
+    (begin	; outermost if, when at latest version
+      (statusstate 1)
+      (statusbox 'insert 'end "tf2c at latest version!\n")
+      (statusstate 0))))
 
 ; butler verify cli is fairly simple,
 ; we simply pass in URLs to the master
