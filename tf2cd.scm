@@ -168,8 +168,7 @@
 ; we didnt exactly simplify this..
 (define (versiondetectproc)
   ; if the user doesnt select a dir, the userdir var is the empty string
-  (if (zero? (string-length (tk-get-var 'userdir)))
-    (display "erm what the sigma")
+  (if (not (zero? (string-length (tk-get-var 'userdir))))
     (let ([dir (tk-get-var 'userdir)]	; else case
 	  [file "/tf2classic/rev.txt"] [full ""]
 	  [dotlatestver (string-intersperse (string-chop (number->string *latestver*) 1) ".")])
