@@ -9,6 +9,11 @@
 (import (json-abnf)
 	(pstk))
 
+; TODO temp file cleanup functions
+; should we bother checking for old old versions?
+; or just clean up the mess we leave in each procedure
+; its probably safe to default to cleaning upgrade proc
+
 ; NOTE our variable definitions generally go up here,
 ; but for cursed reasons some of them are below, under
 ; the tk gui block, tk is a bitch with passing vars
@@ -327,6 +332,15 @@
 	(tk-set-var! 'progress 1.0)
 	(statusstate 0)
 	(buttonstate 1)))))
+
+; stub for cleaning up our mess
+; 0 - install proc
+; 1 - upgrade proc
+(define cleanproc
+  (lambda (p)
+    (cond
+      ((zero? p) (void))
+      ((= 1 p) (void)))))
 
 ; input is a port, iterates and prints the lines to the status box widget
 ; until it hits EOF - dont forget setting the box's state before/after use
