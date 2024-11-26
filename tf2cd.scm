@@ -71,8 +71,7 @@
 (define *unpackargs* (list "-xvf"))
 
 (define *butlerpatchargs*
-  (list "apply"
-	(conc "--staging-dir=" (conc *tempdir* "/staging"))))
+  (list "apply" (conc "--staging-dir=" *tempdir* "/staging")))
 
 ; TODO generalize; support open fortress etc
 ; '() means null, resist the urge to touch them
@@ -278,7 +277,7 @@
 	  (statusstate 1)
 
 	  ; now we set up wot butler will do
-	  (create-directory (conc *tempdir* "/staging"))  ; does butler need this? we copy reference behavior
+	  (create-directory (conc *tempdir* "/staging"))
 
 	  (let*-values ([(tf2cdir) (conc rid "/tf2classic")]
 			[(patchpath) (conc *tempdir* "/" *patchfile*)]
@@ -291,6 +290,8 @@
 	      (close-output-port y)
 	      (close-input-port e)))
 
+
+	  (cleanproc) ; wipe the staging dir
 	  (statusstate 0)
 	  (buttonstate 1)))
 
@@ -333,14 +334,10 @@
 	(statusstate 0)
 	(buttonstate 1)))))
 
-; stub for cleaning up our mess
-; 0 - install proc
-; 1 - upgrade proc
-(define cleanproc
-  (lambda (p)
-    (cond
-      ((zero? p) (void))
-      ((= 1 p) (void)))))
+(define (cleanproc)
+  (let ([stagingtmp (conc *tempdir* "/staging")])
+    (if (directory-exists? stagingtmp)
+      (delete-directory stagingtmp #t))))
 
 ; input is a port, iterates and prints the lines to the status box widget
 ; until it hits EOF - dont forget setting the box's state before/after use
