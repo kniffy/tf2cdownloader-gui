@@ -388,6 +388,7 @@
       ((= 1 z) (statusbox 'configure 'state: 'normal))
       ((= 2 z) (statusbox 'delete '1.0 'end)))))
 
+; bintracker's method of starting tk
 (begin
   (let ((gui-thread (make-thread tk-event-loop)))
     (handle-exceptions
@@ -397,4 +398,3 @@
 	(abort exn))
       (thread-start! gui-thread)
       (thread-join! gui-thread))))
-
