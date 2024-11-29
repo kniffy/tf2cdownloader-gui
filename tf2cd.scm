@@ -1,18 +1,15 @@
-(import (chicken file)
+(import (chicken condition)
+	(chicken file)
 	(chicken io)
 	(chicken pathname)
 	(chicken port)
 	(chicken process)
 	(chicken process-context)
-	(chicken string))
+	(chicken string)
+	(srfi-18))
 
 (import (json-abnf)
 	(pstk))
-
-; TODO temp file cleanup functions
-; should we bother checking for old old versions?
-; or just clean up the mess we leave in each procedure
-; its probably safe to default to cleaning upgrade proc
 
 ; NOTE our variable definitions generally go up here,
 ; but for cursed reasons some of them are below, under
@@ -78,7 +75,6 @@
 (define *masterurl* "https://wiki.tf2classic.com/kachemak/")
 (define *slaveurl* "https://file.tildas.org/pub/tf2classic/")
 (define *fulltarballurl* '())
-;(define *revtxt* "current") ; deprecated
 (define *patchfile* '())
 (define *healfile* '())
 (define *currentver* '())
@@ -290,8 +286,8 @@
 	      (close-output-port y)
 	      (close-input-port e)))
 
-
-	  (cleanproc) ; wipe the staging dir
+	  (statusbox 'insert 'end "cleaning up staging dir..\n")
+	  (cleanproc) ; wipe the staging dir - does this always happen instantly?
 	  (statusstate 0)
 	  (buttonstate 1)))
 
@@ -392,4 +388,13 @@
       ((= 1 z) (statusbox 'configure 'state: 'normal))
       ((= 2 z) (statusbox 'delete '1.0 'end)))))
 
-(tk-event-loop)
+(begin
+  (let ((gui-thread (make-thread tk-event-loop)))
+    (handle-exceptions
+      exn
+      (if (uncaught-exception? exn)
+	(abort (uncaught-exception-reason exn))
+	(abort exn))
+      (thread-start! gui-thread)
+      (thread-join! gui-thread))))
+
