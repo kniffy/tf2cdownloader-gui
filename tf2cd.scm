@@ -246,7 +246,7 @@
   (if (not (= *currentver* *latestver*))
     (if (not (null? *patchfile*))
       (let*-values ([(rid) (tk-get-var 'userdir)]
-		    [(a b c) (process *downloader* (append *ariaargs* (list (conc *masterurl* *patchfile*))))])
+		    [(a b c) (process *downloader* (append *curlargs* (list (conc *masterurl* *patchfile*))))])
 	(begin
 	  (buttonstate 0)
 	  (statusstate 1)
