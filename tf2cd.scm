@@ -288,6 +288,7 @@
 
 	  (statusbox 'insert 'end "cleaning up staging dir..\n")
 	  (cleanproc) ; wipe the staging dir - does this always happen instantly?
+	  (statusbox 'insert 'end "cleaned up!\n")
 	  (statusstate 0)
 	  (buttonstate 1)))
 
