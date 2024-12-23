@@ -16,8 +16,8 @@ ensure you have more than enough space eg. 20+gb
 `apt install chicken-bin` on debian  
 `pacman -S chicken` on arch  
 
-2. install `pstk` and `json-abnf`  
-`chicken-install -sudo pstk json-abnf`  
+2. install chicken eggs
+`chicken-install -sudo pstk json-abnf srfi-18`  
 
 3. compile  
 `csc -static -gui -O3 -d0 tf2cd.scm`  
