@@ -16,7 +16,7 @@ ensure you have more than enough space eg. 20+gb
 `apt install chicken-bin` on debian  
 `pacman -S chicken` on arch  
 
-2. install chicken eggs
+2. install chicken eggs  
 `chicken-install -sudo pstk json-abnf srfi-18`  
 
 3. compile  
