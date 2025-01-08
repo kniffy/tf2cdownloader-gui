@@ -32,7 +32,8 @@
    (define *tempdir* (get-environment-variable "TEMP"))
    (define *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
 
-   (define *theme* "xpnative"))
+   (define *theme* "xpnative")
+   (define *progbarsize* 645))	; on windows sometimes the progbar is 1px
 
   (linux
     (define *tempdir* (make-absolute-pathname "var" "tmp"))
