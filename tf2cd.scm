@@ -32,8 +32,7 @@
    (define *tempdir* (get-environment-variable "TEMP"))
    (define *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
 
-   (define *theme* "xpnative")
-   (define *progbarsize* 645))	; on windows sometimes the progbar is 1px
+   (define *theme* "xpnative"))
 
   (linux
     (define *tempdir* (make-absolute-pathname "var" "tmp"))
@@ -105,6 +104,7 @@
 		   'command: (lambda ()
 			       (let ([cd (tk/choose-directory 'initialdir: *defaultdir* 'mustexist: 'true)])
 				 (begin
+				   (prog 'configure 'length: (tk/winfo 'width statusbox)) ; bug workaround
 				   (tk-set-var! 'userdir cd)
 				   (findlatestversion)
 				   (versiondetectproc))))))
@@ -125,8 +125,6 @@
 		    'command: (lambda () (verifyproc))))
 
 (define prog (tk 'create-widget 'progressbar
-		 'length:
-		 *progbarsize*
 		 'maximum: 1
 		 'mode: 'determinate
 		 'orient: 'horizontal
@@ -151,6 +149,8 @@
 
 (entry 'insert 0 "pick a dir :^)")			; we cant put this in the initialization
 (prog 'configure 'length: (tk/winfo 'width statusbox))	; we force the width here
+; on windows we must go completely nuclear for setting the prog bar width, its up in the
+; browse button lambda to make for fucking 100% certain that the width is not 1px
 
 ; PROCEDURES!!
 ; TODO handle error case,
