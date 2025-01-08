@@ -125,6 +125,8 @@
 		    'command: (lambda () (verifyproc))))
 
 (define prog (tk 'create-widget 'progressbar
+		 'length:
+		 *progbarsize*
 		 'maximum: 1
 		 'mode: 'determinate
 		 'orient: 'horizontal
