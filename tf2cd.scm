@@ -162,10 +162,12 @@
 ; and do as much setting of variables as possible in here
 (define (findlatestversion)
   (if (null? *sex*)
-    (let*-values ([(a b c) (process *curl* (list "-s" (conc *slaveurl* "versions.sexp")))])
+    (let*-values ([(a b c) (threaded-exe *curl* (list "-s" (conc *slaveurl* "versions.sexp")))])
       (set! *sex* (read-list a))
       (set! *latestver* (string->number (caar (reverse (caar *sex*)))))
-      (set! *fulltarballurl* (conc *masterurl* (cdr (assoc "url" (cdr (assoc (number->string *latestver*) (cdr (caar *sex*))))))))
+      (set! *fulltarballurl*
+	(conc *masterurl*
+	      (cdr (assoc "url" (cdr (assoc (number->string *latestver*) (cdr (caar *sex*))))))))
       (close-input-port a)
       (close-output-port b))))
 
@@ -216,7 +218,8 @@
 	  (statusstate 0))))))
 
 (define (installproc)
-  (let*-values ([(rid) (tk-get-var 'userdir)] [(a b c) (process *downloader* (append *ariaargs* (list *fulltarballurl*)))])
+  (let*-values ([(rid) (tk-get-var 'userdir)]
+		[(a b c) (threaded-exe *downloader* (append *ariaargs* (list *fulltarballurl*)))])
     (begin
       (buttonstate 0)
       (statusstate 1)
@@ -392,7 +395,22 @@
       ((= 1 z) (statusbox 'configure 'state: 'normal))
       ((= 2 z) (statusbox 'delete '1.0 'end)))))
 
-; bintracker's method of starting tk
+; for sanity's sake we can use some green threads when we need
+; to poke curl, tar, etc
+; TODO set a bit for which underlying process function we want
+(define threaded-exe
+  (lambda (cmd #!optional args)
+    (begin
+      (let ((th (make-thread (lambda () (process cmd args)))))
+	(handle-exceptions
+	  exn
+	  (if (uncaught-exception? exn)
+	    (abort (uncaught-exception-reason exn))
+	    (abort exn))
+	  (thread-start! th)
+	  (thread-join! th))))))
+
+; main tk loop
 (begin
   (let ((gui-thread (make-thread tk-event-loop)))
     (handle-exceptions
