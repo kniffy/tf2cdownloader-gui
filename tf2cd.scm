@@ -158,16 +158,16 @@
 ; browse button lambda to make for fucking 100% certain that the width is not 1px
 
 ; PROCEDURES!!
-; TODO handle error case,
-; and do as much setting of variables as possible in here
+
+; note that this is not threading the process
 (define (findlatestversion)
   (if (null? *sex*)
-    (let*-values ([(a b c) (threaded-exe *curl* (list "-s" (conc *slaveurl* "versions.sexp")))])
-      (set! *sex* (read-list a))
-      (set! *latestver* (string->number (caar (reverse (caar *sex*)))))
+    (let*-values ([(a b c) (process *curl* (list "-s" (conc *masterurl* "versions.json")))])
+      (set! *sex* (parser (read-string #f a)))
+      (set! *latestver* (string->number (caar (reverse (cdar *sex*)))))
       (set! *fulltarballurl*
 	(conc *masterurl*
-	      (cdr (assoc "url" (cdr (assoc (number->string *latestver*) (cdr (caar *sex*))))))))
+	      (cdr (assoc "url" (cdr (assoc (number->string *latestver*) (cdr (cdar *sex*))))))))
       (close-input-port a)
       (close-output-port b))))
 
