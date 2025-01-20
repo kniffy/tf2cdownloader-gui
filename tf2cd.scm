@@ -48,7 +48,7 @@
   (list
     "--enable-color=false"
     "-x 16"
-    "-UTF2CDownloadergui2024-11-24"
+    "-UTF2CDownloadergui2025-01-20"
     "--allow-piece-length-change=true"
     "-j 16"
     "--optimize-concurrent-downloads=true"
@@ -153,10 +153,6 @@
 
 (entry 'insert 0 "pick a dir :^)")			; we cant put this in the initialization
 
-;(prog 'configure 'length: (tk/winfo 'width statusbox))	; we force the width here
-; on windows we must go completely nuclear for setting the prog bar width, its up in the
-; browse button lambda to make for fucking 100% certain that the width is not 1px
-
 ; PROCEDURES!!
 
 ; note that this is not threading the process
@@ -189,16 +185,15 @@
 	       [dotver (string-intersperse (string-chop (number->string ver) 1) ".")])
 
 	  (set! *currentver* ver)
-	  (set! *healfile* (cdr (assoc "heal" (cdr (assoc (number->string ver) (cdr (caar *sex*)))))))
+	  (set! *healfile* (cdr (assoc "heal" (cdr (assoc (number->string ver) (cdr (cdar *sex*)))))))
 
 	  (unless (= ver *latestver*)
-	    (set! *patchfile* (cdr (assoc "url" (cdr (assoc (number->string ver) (cdr (cadr (car *sex*)))))))))
+	    (set! *patchfile* (cdr (assoc "url" (cdr (assoc (number->string ver) (cdr (cadr *sex*))))))))
 
 	  (begin
 	    (statusstate 1)
 	    (statusbox 'insert 'end "tf2c installation: found\n")
 	    (statusbox 'insert 'end (conc "version " ver " detected\n"))
-
 
 	    (if [or (< ver 203) (> ver 230)]
 	      (begin  ; true case
