@@ -76,6 +76,7 @@
 (define *slaveurl* "https://file.tildas.org/pub/tf2classic/")
 (define *fulltarballurl* '())
 (define *patchfile* '())
+(define *patchfileurl* '())
 (define *healfile* '())
 (define *currentver* '())
 (define *latestver* '())
@@ -185,10 +186,11 @@
 	       [dotver (string-intersperse (string-chop (number->string ver) 1) ".")])
 
 	  (set! *currentver* ver)
-	  (set! *healfile* (cdr (assoc "heal" (cdr (assoc (number->string ver) (cdr (cdar *sex*)))))))
+	  (set! *healfile* (cdr (assoc "heal" (cdr (assoc (number->string ver) (cddar *sex*))))))
 
 	  (unless (= ver *latestver*)
-	    (set! *patchfile* (cdr (assoc "url" (cdr (assoc (number->string ver) (cdr (cadr *sex*))))))))
+	    (set! *patchfileurl* (cdr (assoc "url"  (cdr (assoc (number->string ver) (cdadr *sex*))))))
+	    (set! *patchfile*    (cdr (assoc "file" (cdr (assoc (number->string ver) (cdadr *sex*)))))))
 
 	  (begin
 	    (statusstate 1)
@@ -257,7 +259,7 @@
   (if (not (= *currentver* *latestver*))
     (if (not (null? *patchfile*))
       (let*-values ([(rid) (tk-get-var 'userdir)]
-		    [(a b c) (process *downloader* (append *ariaargs* (list (conc *masterurl* *patchfile*))))])
+		    [(a b c) (process *downloader* (append *ariaargs* (list (conc *masterurl* *patchfileurl*))))])
 	(begin
 	  (buttonstate 0)
 	  (statusstate 1)
