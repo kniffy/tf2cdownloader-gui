@@ -161,16 +161,20 @@
 
 ; our special shit to make sure subprocesses die
 (tk/wm 'protocol "." "WM_DELETE_WINDOW"
-       (lambda ()
-	 (begin
-	   (let ([tkpid (string->number (tk-eval "pid"))])
-	     (cond
-	       ((not (null? *pida*)) (process-signal *pida*))
-	       ((not (null? *pidb*)) (process-signal *pidb*))
-	       ((not (null? *pidc*)) (process-signal *pidc*)))
-	     (process-signal tkpid))
+       (cond-expand
+	 (windows
+	   (void))
+	 (linux
+	   (lambda ()
+;	     (begin
+	       (let ([tkpid (string->number (tk-eval "pid"))])
+		 (cond
+		   ((not (null? *pida*)) (process-signal *pida*))
+		   ((not (null? *pidb*)) (process-signal *pidb*))
+		   ((not (null? *pidc*)) (process-signal *pidc*)))
+		 (process-signal tkpid))
 
-	   (exit))))
+	       (exit)))))
 
 ; PROCEDURES!!
 
@@ -273,7 +277,10 @@
 	(statusbox 'insert 'end "\n Unpacked!\n")
 	(statusbox 'see 'end))
 
-      (statusstate 0))))
+      (statusstate 0)))
+
+  (set! *pida* '())
+  (set! *pidb* '()))
 
 (define (upgradeproc)
   (if (not (= *currentver* *latestver*))
@@ -290,9 +297,12 @@
 	  (close-output-port b)
 
 	  (statusbox 'insert 'end "verifying before patching..\n")
+	  (statusbox 'see 'end)
 
-	  (sleep 5)
+	  (set! *pida* '()) ; download call is over by now
+
 	  (verifyproc)
+
 	  (buttonstate 0) ; verify proc sets these off, we still need it here
 	  (statusstate 1)
 
@@ -301,9 +311,8 @@
 
 	  (let*-values ([(tf2cdir) (conc rid "/tf2classic")]
 			[(patchpath) (conc *tempdir* "/" *patchfile*)]
-			[(x y z e) (process* *butler*
-					     (append *butlerpatchargs*
-						     (list patchpath tf2cdir "--json")))])
+			[(x y z e) (process* *butler* (append *butlerpatchargs*
+							      (list patchpath tf2cdir "--json")))])
 	    (set! *pidb* z)
 	    (begin
 	      (statusbox 'insert 'end "applying patch..\n")
@@ -333,7 +342,10 @@
     (begin	; outermost if, when at latest version
       (statusstate 1)
       (statusbox 'insert 'end "tf2c at latest version!\n")
-      (statusstate 0))))
+      (statusstate 0)))
+
+  (set! *pida* '())
+  (set! *pidb* '()))
 
 ; butler verify cli is fairly simple,
 ; we simply pass in URLs to the master
@@ -364,7 +376,9 @@
 	(statusbox 'see 'end)
 	(tk-set-var! 'progress 1.0)
 	(statusstate 0)
-	(buttonstate 1)))))
+	(buttonstate 1)))
+
+    (set! *pidc* '())))
 
 (define (cleanproc)
   (let ([stagingtmp (conc *tempdir* "/staging")])
