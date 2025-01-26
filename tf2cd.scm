@@ -84,6 +84,11 @@
 
 (define *sex* '()) ; whole parsed versions.json
 
+; we sometimes need to kill processes, so we set some global vars
+(define *pida* '())
+(define *pidb* '())
+(define *pidc* '())
+
 ; tk init
 (tk-start *ttccll*)
 (ttk-map-widgets 'all) ; use the ttk widget set
@@ -154,6 +159,19 @@
 
 (entry 'insert 0 "pick a dir :^)")			; we cant put this in the initialization
 
+; our special shit to make sure subprocesses die
+(tk/wm 'protocol "." "WM_DELETE_WINDOW"
+       (lambda ()
+	 (begin
+	   (let ([tkpid (string->number (tk-eval "pid"))])
+	     (cond
+	       ((not (null? *pida*)) (process-signal *pida*))
+	       ((not (null? *pidb*)) (process-signal *pidb*))
+	       ((not (null? *pidc*)) (process-signal *pidc*)))
+	     (process-signal tkpid))
+
+	   (exit))))
+
 ; PROCEDURES!!
 
 ; note that this is not threading the process
@@ -218,6 +236,7 @@
   (let*-values ([(rid) (tk-get-var 'userdir)]
 		[(a b c) (threaded-exe *downloader* (append *ariaargs* (list *fulltarballurl*)))])
     (begin
+      (set! *pida* c)
       (buttonstate 0)
       (statusstate 1)
       (statusstate 2)
@@ -235,6 +254,7 @@
       (set! *unpackargs* (append *unpackargs* (list (conc *tempdir* "/tf2classic-" *dotlatestver* ".tar.zst"))))
 
       (let-values ([(d e f g) (process* *tar* (append *unpackargs* (list "-C" rid)))])
+	(set! *pidb* f)
 	(cond-expand
 	  (windows
 	    (zprint g)
@@ -260,6 +280,7 @@
     (if (not (null? *patchfile*))
       (let*-values ([(rid) (tk-get-var 'userdir)]
 		    [(a b c) (process *downloader* (append *ariaargs* (list (conc *masterurl* *patchfileurl*))))])
+	(set! *pida* c)
 	(begin
 	  (buttonstate 0)
 	  (statusstate 1)
@@ -283,6 +304,7 @@
 			[(x y z e) (process* *butler*
 					     (append *butlerpatchargs*
 						     (list patchpath tf2cdir "--json")))])
+	    (set! *pidb* z)
 	    (begin
 	      (statusbox 'insert 'end "applying patch..\n")
 	      (statusbox 'see 'end)
@@ -328,6 +350,7 @@
 		       "--json")])
 
     (let-values ([(a b c d) (process* *butler* butlerverifyargs)])
+      (set! *pidc* c)
       (begin
 	(buttonstate 0)
 	(statusstate 1)
