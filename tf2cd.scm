@@ -280,18 +280,26 @@
 
 	  (let*-values ([(tf2cdir) (conc rid "/tf2classic")]
 			[(patchpath) (conc *tempdir* "/" *patchfile*)]
-			[(x y z e) (process* *butler* (append *butlerpatchargs* (list patchpath tf2cdir)))])
+			[(x y z e) (process* *butler*
+					     (append *butlerpatchargs*
+						     (list patchpath tf2cdir "--json")))])
 	    (begin
 	      (statusbox 'insert 'end "applying patch..\n")
-	      (zprint x)
-	      (zprint e)
+	      (statusbox 'see 'end)
+	      (zprogress x)
 	      (close-input-port x)
 	      (close-output-port y)
-	      (close-input-port e)))
+	      (zprint e)
+	      (close-input-port e)
+
+	      (statusbox 'insert 'end "applied?\n")
+	      (statusbox 'see 'end)
+	      (tk-set-var! 'progress 1.0)))
 
 	  (statusbox 'insert 'end "cleaning up staging dir..\n")
 	  (cleanproc) ; wipe the staging dir - does this always happen instantly?
 	  (statusbox 'insert 'end "cleaned up!\n")
+	  (statusbox 'see 'end)
 	  (statusstate 0)
 	  (buttonstate 1)))
 
@@ -330,6 +338,7 @@
 	(close-input-port d)
 
 	(statusbox 'insert 'end "verified?\n")
+	(statusbox 'see 'end)
 	(tk-set-var! 'progress 1.0)
 	(statusstate 0)
 	(buttonstate 1)))))
