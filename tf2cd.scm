@@ -169,7 +169,7 @@
 		 ((not (null? *pida*)) (system (conc "taskkill /pid " (number->string *pida*) " /T")))
 		 ((not (null? *pidb*)) (system (conc "taskkill /pid " (number->string *pidb*) " /T")))
 		 ((not (null? *pidc*)) (system (conc "taskkill /pid " (number->string *pidc*) " /T"))))
-	       (system (conc "taskkill /pid " tkpid "/T")))
+	       (system (conc "taskkill /pid " tkpid " /T")))
 
 	     (exit)))
 
@@ -246,7 +246,7 @@
 
 (define (installproc)
   (let*-values ([(rid) (tk-get-var 'userdir)]
-		[(a b c) (threaded-exe *downloader* (append *ariaargs* (list *fulltarballurl*)))])
+		[(a b c) (process *downloader* (append *ariaargs* (list *fulltarballurl*)))])
     (begin
       (set! *pida* c)
       (buttonstate 0)
@@ -445,21 +445,6 @@
       ((zero? z) (statusbox 'configure 'state: 'disabled))
       ((= 1 z) (statusbox 'configure 'state: 'normal))
       ((= 2 z) (statusbox 'delete '1.0 'end)))))
-
-; for sanity's sake we can use some green threads when we need
-; to poke curl, tar, etc
-; TODO set a bit for which underlying process function we want
-(define threaded-exe
-  (lambda (cmd #!optional args)
-    (begin
-      (let ((th (make-thread (lambda () (process cmd args)))))
-	(handle-exceptions
-	  exn
-	  (if (uncaught-exception? exn)
-	    (abort (uncaught-exception-reason exn))
-	    (abort exn))
-	  (thread-start! th)
-	  (thread-join! th))))))
 
 ; main tk loop
 (begin
