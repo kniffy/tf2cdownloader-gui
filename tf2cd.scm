@@ -166,10 +166,11 @@
 	   (lambda ()
 	     (let ([tkpid (tk-eval "pid")])
 	       (cond
-		 ((not (null? *pida*)) (system (conc "taskkill /pid " (number->string *pida*) " /T")))
-		 ((not (null? *pidb*)) (system (conc "taskkill /pid " (number->string *pidb*) " /T")))
-		 ((not (null? *pidc*)) (system (conc "taskkill /pid " (number->string *pidc*) " /T"))))
-	       (system (conc "taskkill /pid " tkpid " /T")))
+		 ((not (null? *pida*)) (tk-eval (conc "exec taskkill /PID " (number->string *pida*) " /T /F")))
+		 ((not (null? *pidb*)) (tk-eval (conc "exec taskkill /PID " (number->string *pidb*) " /T /F")))
+		 ((not (null? *pidc*)) (tk-eval (conc "exec taskkill /PID " (number->string *pidc*) " /T /F"))))
+	       (tk-eval (conc "exec taskkill /PID " tkpid " /T /F"))
+	       (tk-eval "exec taskkill /IM tf2cd.exe /T /F"))
 
 	     (exit)))
 
