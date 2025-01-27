@@ -163,10 +163,18 @@
 (tk/wm 'protocol "." "WM_DELETE_WINDOW"
        (cond-expand
 	 (windows
-	   (void))
+	   (lambda ()
+	     (let ([tkpid (tk-eval "pid")])
+	       (cond
+		 ((not (null? *pida*)) (tk-eval (conc "exec taskkill /pid " (number->string *pida*))))
+		 ((not (null? *pidb*)) (tk-eval (conc "exec taskkill /pid " (number->string *pidb*))))
+		 ((not (null? *pidc*)) (tk-eval (conc "exec taskkill /pid " (number->string *pidc*)))))
+	       (system (conc "taskkill /pid " tkpid)))
+
+	     (exit)))
+
 	 (linux
 	   (lambda ()
-;	     (begin
 	       (let ([tkpid (string->number (tk-eval "pid"))])
 		 (cond
 		   ((not (null? *pida*)) (process-signal *pida*))
