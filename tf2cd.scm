@@ -166,10 +166,10 @@
 	   (lambda ()
 	     (let ([tkpid (tk-eval "pid")])
 	       (cond
-		 ((not (null? *pida*)) (system (conc "taskkill /pid " (number->string *pida*))))
-		 ((not (null? *pidb*)) (system (conc "taskkill /pid " (number->string *pidb*))))
-		 ((not (null? *pidc*)) (system (conc "taskkill /pid " (number->string *pidc*)))))
-	       (system (conc "taskkill /pid " tkpid)))
+		 ((not (null? *pida*)) (system (conc "taskkill /pid " (number->string *pida*) "/T")))
+		 ((not (null? *pidb*)) (system (conc "taskkill /pid " (number->string *pidb*) "/T")))
+		 ((not (null? *pidc*)) (system (conc "taskkill /pid " (number->string *pidc*) "/T"))))
+	       (system (conc "taskkill /pid " tkpid "/T")))
 
 	     (exit)))
 
