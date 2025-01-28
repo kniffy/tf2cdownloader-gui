@@ -157,7 +157,7 @@
 (tk/grid prog 'row: 5 'column: 0 'columnspan: 4)
 (tk/grid statusbox 'row: 6 'column: 0 'columnspan: 4)
 
-(entry 'insert 0 "pick a dir :^)")			; we cant put this in the initialization
+(entry 'insert 0 "pick sourcemods dir :^)")			; we cant put this in the initialization
 
 ; our special shit to make sure subprocesses die
 (tk/wm 'protocol "." "WM_DELETE_WINDOW"
@@ -176,14 +176,8 @@
 
 	 (linux
 	   (lambda ()
-	       (let ([tkpid (string->number (tk-eval "pid"))])
-		 (cond
-		   ((not (null? *pida*)) (process-signal *pida*))
-		   ((not (null? *pidb*)) (process-signal *pidb*))
-		   ((not (null? *pidc*)) (process-signal *pidc*)))
-		 (process-signal tkpid))
-
-	       (exit)))))
+	     (tk-eval "exec pkill -TERM \"tclkit|butler|aria2c\"")
+	     (exit)))))
 
 ; PROCEDURES!!
 
