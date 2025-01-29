@@ -164,14 +164,7 @@
        (cond-expand
 	 (windows
 	   (lambda ()
-	     (let ([tkpid (tk-eval "pid")])
-	       (cond
-		 ((not (null? *pida*)) (tk-eval (conc "exec taskkill /PID " (number->string *pida*) " /T /F")))
-		 ((not (null? *pidb*)) (tk-eval (conc "exec taskkill /PID " (number->string *pidb*) " /T /F")))
-		 ((not (null? *pidc*)) (tk-eval (conc "exec taskkill /PID " (number->string *pidc*) " /T /F"))))
-	       (tk-eval (conc "exec taskkill /PID " tkpid " /T /F"))
-	       (tk-eval "exec taskkill /IM tf2cd.exe /T /F"))
-
+	     (tk-eval "exec taskkill /IM tclkit.exe /IM aria2c.exe /IM butler.exe /T /F")
 	     (exit)))
 
 	 (linux
