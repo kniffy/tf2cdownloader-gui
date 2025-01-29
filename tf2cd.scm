@@ -181,7 +181,6 @@
 
 ; PROCEDURES!!
 
-; note that this is not threading the process
 (define (findlatestversion)
   (if (null? *sex*)
     (let*-values ([(a b c) (process *curl* (list "-s" (conc *masterurl* "versions.json")))])
@@ -198,9 +197,9 @@
 (define (versiondetectproc)
   ; if the user doesnt select a dir, the userdir var is the empty string
   (if (not (zero? (string-length (tk-get-var 'userdir))))
-    (let ([dir (tk-get-var 'userdir)]
+    (let ([dotlatestver (string-intersperse (string-chop (number->string *latestver*) 1) ".")]
 	  [file "/tf2classic/rev.txt"] [full ""]
-	  [dotlatestver (string-intersperse (string-chop (number->string *latestver*) 1) ".")])
+	  [dir (tk-get-var 'userdir)])
 
       ; we gotta set this to global var to work around glob gremlins in the unpack proc
       ; do we still need to set this? 20240926
@@ -240,8 +239,8 @@
 	  (statusstate 0))))))
 
 (define (installproc)
-  (let*-values ([(rid) (tk-get-var 'userdir)]
-		[(a b c) (process *downloader* (append *ariaargs* (list *fulltarballurl*)))])
+  (let-values ([(a b c) (process *downloader* (append *ariaargs* (list *fulltarballurl*)))]
+	       [(rid) (tk-get-var 'userdir)])
     (begin
       (set! *pida* c)
       (buttonstate 0)
@@ -271,9 +270,6 @@
 	    (zprint d)
 	    (zprint g)))
 
-	;(statusbox 'insert 'end "\n")
-	;(sleep 2)
-	;(zprint g)
 	(close-input-port d)
 	(close-output-port e)
 	(close-input-port g)
@@ -288,8 +284,8 @@
 (define (upgradeproc)
   (if (not (= *currentver* *latestver*))
     (if (not (null? *patchfile*))
-      (let*-values ([(rid) (tk-get-var 'userdir)]
-		    [(a b c) (process *downloader* (append *ariaargs* (list (conc *masterurl* *patchfileurl*))))])
+      (let-values ([(a b c) (process *downloader* (append *ariaargs* (list (conc *masterurl* *patchfileurl*))))]
+		   [(rid) (tk-get-var 'userdir)])
 	(set! *pida* c)
 	(begin
 	  (buttonstate 0)
