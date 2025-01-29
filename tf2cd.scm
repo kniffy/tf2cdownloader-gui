@@ -33,7 +33,7 @@
    (define *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
 
    (define *theme* "xpnative")
-   (define *progbarsize* 645))
+   (define *progbarsize* 644))
 
   (linux
     (define *tempdir* (make-absolute-pathname "var" "tmp"))
@@ -164,12 +164,12 @@
        (cond-expand
 	 (windows
 	   (lambda ()
-	     (tk-eval "exec taskkill /IM tclkit.exe /IM aria2c.exe /IM butler.exe /T /F")
+	     (tk-eval "exec taskkill /IM tclkit.exe /IM aria2c.exe /IM butler.exe /IM curl.exe /T /F")
 	     (exit)))
 
 	 (linux
 	   (lambda ()
-	     (tk-eval "exec pkill -TERM \"tclkit|butler|aria2c\"")
+	     (tk-eval "exec pkill -TERM \"tclkit|butler|curl|aria2c\"")
 	     (exit)))))
 
 ; PROCEDURES!!
