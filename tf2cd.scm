@@ -84,11 +84,6 @@
 
 (define *sex* '()) ; whole parsed versions.json
 
-; we sometimes need to kill processes, so we set some global vars
-(define *pida* '())
-(define *pidb* '())
-(define *pidc* '())
-
 ; tk init
 (tk-start *ttccll*)
 (ttk-map-widgets 'all) ; use the ttk widget set
@@ -169,7 +164,7 @@
 
 	 (linux
 	   (lambda ()
-	     (tk-eval "exec pkill -TERM \"tclkit|butler|curl|aria2c\"")
+	     (tk-eval "exec pkill -TERM -f \"bin/tclkit|bin/butler|bin/curl|bin/aria2c\"")
 	     (exit)))))
 
 ; PROCEDURES!!
@@ -235,7 +230,6 @@
   (let-values ([(a b c) (process *downloader* (append *ariaargs* (list *fulltarballurl*)))]
 	       [(rid) (tk-get-var 'userdir)])
     (begin
-      (set! *pida* c)
       (buttonstate 0)
       (statusstate 1)
       (statusstate 2)
@@ -253,7 +247,6 @@
       (set! *unpackargs* (append *unpackargs* (list (conc *tempdir* "/tf2classic-" *dotlatestver* ".tar.zst"))))
 
       (let-values ([(d e f g) (process* *tar* (append *unpackargs* (list "-C" rid)))])
-	(set! *pidb* f)
 	(cond-expand
 	  (windows
 	    (zprint g)
@@ -269,17 +262,13 @@
 	(statusbox 'insert 'end "\n Unpacked!\n")
 	(statusbox 'see 'end))
 
-      (statusstate 0)))
-
-  (set! *pida* '())
-  (set! *pidb* '()))
+      (statusstate 0))))
 
 (define (upgradeproc)
   (if (not (= *currentver* *latestver*))
     (if (not (null? *patchfile*))
       (let-values ([(a b c) (process *downloader* (append *ariaargs* (list (conc *masterurl* *patchfileurl*))))]
 		   [(rid) (tk-get-var 'userdir)])
-	(set! *pida* c)
 	(begin
 	  (buttonstate 0)
 	  (statusstate 1)
@@ -290,8 +279,6 @@
 
 	  (statusbox 'insert 'end "verifying before patching..\n")
 	  (statusbox 'see 'end)
-
-	  (set! *pida* '()) ; download call is over by now
 
 	  (verifyproc)
 
@@ -305,7 +292,6 @@
 			[(patchpath) (conc *tempdir* "/" *patchfile*)]
 			[(x y z e) (process* *butler* (append *butlerpatchargs*
 							      (list patchpath tf2cdir "--json")))])
-	    (set! *pidb* z)
 	    (begin
 	      (statusbox 'insert 'end "applying patch..\n")
 	      (statusbox 'see 'end)
@@ -334,10 +320,7 @@
     (begin	; outermost if, when at latest version
       (statusstate 1)
       (statusbox 'insert 'end "tf2c at latest version!\n")
-      (statusstate 0)))
-
-  (set! *pida* '())
-  (set! *pidb* '()))
+      (statusstate 0))))
 
 ; butler verify cli is fairly simple,
 ; we simply pass in URLs to the master
@@ -354,7 +337,6 @@
 		       "--json")])
 
     (let-values ([(a b c d) (process* *butler* butlerverifyargs)])
-      (set! *pidc* c)
       (begin
 	(buttonstate 0)
 	(statusstate 1)
@@ -368,9 +350,7 @@
 	(statusbox 'see 'end)
 	(tk-set-var! 'progress 1.0)
 	(statusstate 0)
-	(buttonstate 1)))
-
-    (set! *pidc* '())))
+	(buttonstate 1)))))
 
 (define (cleanproc)
   (let ([stagingtmp (conc *tempdir* "/staging")])
