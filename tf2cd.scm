@@ -48,7 +48,7 @@
   (list
     "--enable-color=false"
     "-x 16"
-    "-UTF2CDownloadergui2025-01-20"
+    "-UTF2CDownloadergui2025-01-30"
     "--allow-piece-length-change=true"
     "-j 16"
     "--optimize-concurrent-downloads=true"
