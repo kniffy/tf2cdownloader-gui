@@ -35,7 +35,9 @@
    (define *theme* "xpnative")
    (define *progbarsize* 644)
 
-   (display "starting..\n" (current-error-port)))
+   (display "starting..\n you didnt use the launcher to run this :^)\n"
+	    (current-error-port))
+   (display "error output will display in this window\n" (current-error-port)))
 
   (linux
     (define *tempdir* (make-absolute-pathname "var" "tmp"))
