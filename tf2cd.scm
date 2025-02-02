@@ -33,7 +33,9 @@
    (define *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
 
    (define *theme* "xpnative")
-   (define *progbarsize* 644))
+   (define *progbarsize* 644)
+
+   (display "starting..\n" (current-error-port)))
 
   (linux
     (define *tempdir* (make-absolute-pathname "var" "tmp"))
@@ -73,7 +75,7 @@
 ; TODO generalize; support open fortress etc
 ; '() means null, resist the urge to touch them
 (define *masterurl* "https://wiki.tf2classic.com/kachemak/")
-(define *slaveurl* "https://file.tildas.org/pub/tf2classic/")
+;(define *slaveurl* "https://file.tildas.org/pub/tf2classic/") ; needed any more?
 (define *fulltarballurl* '())
 (define *patchfile* '())
 (define *patchfileurl* '())
@@ -260,6 +262,7 @@
 	(close-output-port e)
 	(close-input-port g)
 	(statusbox 'insert 'end "\n Unpacked!\n")
+	(statusbox 'insert 'end "\ndone installing!\n")
 	(statusbox 'see 'end))
 
       (statusstate 0))))
@@ -308,9 +311,9 @@
 	  (statusbox 'insert 'end "cleaning up staging dir..\n")
 	  (cleanproc) ; wipe the staging dir - does this always happen instantly?
 	  (statusbox 'insert 'end "cleaned up!\n")
+	  (statusbox 'insert 'end "\ndone upgrading!\n")
 	  (statusbox 'see 'end)
-	  (statusstate 0)
-	  (buttonstate 1)))
+	  (statusstate 0)))
 
       (begin
 	(statusstate 1)
