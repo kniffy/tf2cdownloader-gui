@@ -20,6 +20,7 @@
 (define *curl* (make-pathname "bin" "curl")) ; vendored curl for http3
 (define *tar* "tar")
 (define *ttccll* (make-pathname "bin" "tclkit"))
+(define *zstd* "")
 
 ; set some platform-specific stuff
 (cond-expand
@@ -27,7 +28,9 @@
    (set! *downloader* (pathname-replace-extension *downloader* "exe"))
    (set! *butler* (pathname-replace-extension *butler* "exe"))
    (set! *curl* (pathname-replace-extension *curl* "exe"))
+   (set! *tar* (make-pathname "bin" "tar.exe"))
    (set! *ttccll* (pathname-replace-extension *ttccll* "exe"))
+   (set! *zstd* (make-pathname "bin" "zstd.exe"))
 
    (define *tempdir* (get-environment-variable "TEMP"))
    (define *defaultdir* "c:\\program files (x86)\\steam\\steamapps\\sourcemods")
@@ -69,7 +72,7 @@
     *tempdir*))
 
 ; we append multiple args to some of these later
-(define *unpackargs* (list "-xvf"))
+(define *unpackargs* (list "-I" *zstd* "-xvf"))
 
 (define *butlerpatchargs*
   (list "apply" (conc "--staging-dir=" *tempdir* "/staging")))
@@ -251,14 +254,8 @@
       (set! *unpackargs* (append *unpackargs* (list (conc *tempdir* "/tf2classic-" *dotlatestver* ".tar.zst"))))
 
       (let-values ([(d e f g) (process* *tar* (append *unpackargs* (list "-C" rid)))])
-	(cond-expand
-	  (windows
-	    (zprint g)
-	    (zprint d))
-
-	  (linux
-	    (zprint d)
-	    (zprint g)))
+	(zprint d)
+	(zprint g)
 
 	(close-input-port d)
 	(close-output-port e)
