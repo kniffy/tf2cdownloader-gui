@@ -20,7 +20,7 @@
 (define *curl* (make-pathname "bin" "curl")) ; vendored curl for http3
 (define *tar* "tar")
 (define *ttccll* (make-pathname "bin" "tclkit"))
-(define *zstd* "")
+(define *zstd* "zstd")
 
 ; set some platform-specific stuff
 (cond-expand
@@ -166,7 +166,7 @@
        (cond-expand
 	 (windows
 	   (lambda ()
-	     (tk-eval "exec taskkill /IM tclkit.exe /IM aria2c.exe /IM butler.exe /IM curl.exe /T /F")
+	     (tk-eval "exec taskkill /IM tclkit.exe /IM aria2c.exe /IM butler.exe /IM curl.exe /IM tar.exe /IM zstd.exe /T /F")
 	     (exit)))
 
 	 (linux
